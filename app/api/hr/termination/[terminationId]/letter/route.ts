@@ -1,7 +1,7 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
-import { terminations, users, organizations } from "@/lib/db/schema";
+import { terminations, organizations } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { format } from "date-fns";
 import { generateTerminationLetterPdf } from "@/lib/termination-letter-pdf";

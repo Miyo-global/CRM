@@ -143,10 +143,6 @@ export async function POST(req: NextRequest) {
         const key = hrUser.email.trim().toLowerCase();
         if (emailed.has(key)) continue;
         emailed.add(key);
-        const hrName =
-          hrUser.name ||
-          `${hrUser.firstName ?? ""} ${hrUser.lastName ?? ""}`.trim() ||
-          "HR";
         await sendWfhRequestEmail(hrUser.email, employeeName, dateLabel, reasonForEmail);
       }
 

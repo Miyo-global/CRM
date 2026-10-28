@@ -54,20 +54,13 @@ import {
 import { toast } from "sonner";
 import { Plus, Ticket, Clock, CheckCircle2, AlertCircle, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import type { TicketPriority, TicketStatus, HelpdeskTicket } from "@/types/hr";
+import type { TicketStatus, HelpdeskTicket } from "@/types/hr";
 import { formatIST } from "@/lib/date-utils";
 import { TICKET_STATUSES, TICKET_STATUS_LABELS, ticketStatusLabel } from "@/lib/labels";
 
 const STATUS_OPTIONS: { value: TicketStatus | "ALL"; label: string }[] = [
   { value: "ALL", label: "All Status" },
   ...TICKET_STATUSES.map((value) => ({ value, label: TICKET_STATUS_LABELS[value] })),
-];
-
-const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
-  { value: "LOW", label: "Low" },
-  { value: "MEDIUM", label: "Medium" },
-  { value: "HIGH", label: "High" },
-  { value: "URGENT", label: "Urgent" },
 ];
 
 // BUG-13: Helpdesk and Customer Support are separate queues; say which is which.
@@ -87,16 +80,6 @@ function helpdeskSubtitle(showCustomerSupport: boolean) {
     </>
   );
 }
-
-const CATEGORY_OPTIONS = [
-  "IT Support",
-  "HR Query",
-  "Facilities",
-  "Finance",
-  "Access Request",
-  "Equipment",
-  "Other",
-];
 
 function statusTone(status: string | null): Tone {
   switch (status) {

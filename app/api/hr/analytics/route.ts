@@ -4,7 +4,7 @@ import {
   organizationMembers, users, attendance, leaveRequests,
   payrolls, departments, expenses,
 } from "@/lib/db/schema";
-import { eq, and, gte, lte, sql, count, desc } from "drizzle-orm";
+import { eq, and, gte, lte, sql, count } from "drizzle-orm";
 import { cached, HR_CACHE, CACHE_TTL } from "@/lib/hr-cache";
 import { NO_DEPARTMENT } from "@/lib/hr/department-count";
 

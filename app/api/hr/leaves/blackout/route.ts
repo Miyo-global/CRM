@@ -2,7 +2,7 @@ import { type NextRequest } from "next/server";
 import { withAdmin, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { leaveBlackoutDates } from "@/lib/db/schema";
-import { eq, and, gte, lte, or } from "drizzle-orm";
+import { eq, and, gte, lte } from "drizzle-orm";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";

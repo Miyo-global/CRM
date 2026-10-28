@@ -201,21 +201,6 @@ function personNameSchema(label: string) {
     );
 }
 
-function requiredPhoneSchema(label: string) {
-  return z
-    .string()
-    .trim()
-    .min(1, `${label} is required`)
-    .refine((val) => isValidPhoneNumber(val), {
-      message:
-        "Enter a valid phone number with the correct length for the selected country (e.g. 10-digit mobile for India).",
-    })
-    .refine((val) => {
-      const digits = val.replace(/\D/g, "");
-      return digits.length >= 10 && digits.length <= 15;
-    }, `${label} must contain 10 to 15 digits`);
-}
-
 function optionalPhoneSchema(label: string) {
   return z
     .string()

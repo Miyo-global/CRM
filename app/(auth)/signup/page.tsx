@@ -106,6 +106,7 @@ export default function SignupPage() {
       });
 
       if (result?.ok) {
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- full page load so the new session cookie is read fresh
         window.location.href = "/dashboard";
       } else {
         const needsVerification = result?.error?.toLowerCase().includes("verif");
@@ -114,6 +115,7 @@ export default function SignupPage() {
             ? "Account created. Please verify your email before signing in."
             : "Account created but auto-login failed. Please sign in manually."
         );
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- full page load so the new session cookie is read fresh
         window.location.href = "/signin";
       }
     } catch (error) {

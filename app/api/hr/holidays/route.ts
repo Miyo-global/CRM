@@ -4,7 +4,7 @@ import { canManageHolidays } from "@/lib/constants/roles";
 import { db } from "@/lib/db";
 import { holidays } from "@/lib/db/schema";
 import { findHolidayConflict } from "@/lib/hr/holiday-conflict";
-import { formatDateOnly, getTodayString } from "@/lib/date-utils";
+import { formatDateOnly } from "@/lib/date-utils";
 import type { NextRequest } from "next/server";
 import { createHolidaySchema } from "@/lib/validations/holidays";
 import { sendHolidayReminderIfDue } from "@/server/actions/holiday-actions";

@@ -33,7 +33,9 @@ export default async function BookInterviewPage({
     ? await db.query.jobPostings.findFirst({ where: eq(jobPostings.id, link.jobPostingId) })
     : null;
 
-  const expired = link.expiresAt.getTime() < Date.now();
+  // eslint-disable-next-line react-hooks/purity -- async Server Component, rendered per request
+  const now = Date.now();
+  const expired = link.expiresAt.getTime() < now;
   const booked = link.status === "booked";
 
   if (booked || expired) {
@@ -56,7 +58,7 @@ export default async function BookInterviewPage({
   }
 
   const slots = link.availableSlots
-    .filter((slot) => new Date(slot.start).getTime() > Date.now())
+    .filter((slot) => new Date(slot.start).getTime() > now)
     .map((slot) => ({
       start: new Date(slot.start).toISOString(),
       label: `${formatIST(new Date(slot.start), {

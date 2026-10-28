@@ -25,16 +25,12 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  CalendarDays,
-  Heart,
-  Palmtree,
   MoreVertical,
   Eye,
   Check,
   X,
   RotateCcw,
   Pencil,
-  type LucideIcon,
 } from "lucide-react";
 import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { ConfirmActionDialog } from "@/features/hr/confirm-action-dialog";
@@ -124,18 +120,6 @@ export interface WfhRequest {
     email: string | null;
     image: string | null;
   } | null;
-}
-
-/** Icon per leave type, for scanning a list of requests. No colour: A43's
- *  "sick leave is a different colour here" came from per-type palettes. */
-const LEAVE_TYPE_ICONS: Record<string, LucideIcon> = {
-  "Casual Leave": CalendarDays,
-  "Sick Leave": Heart,
-  "Unpaid Leave": Palmtree,
-};
-
-function leaveTypeIcon(typeName: string): LucideIcon {
-  return LEAVE_TYPE_ICONS[typeName] ?? CalendarDays;
 }
 
 export function formatLeaveBalanceDisplay(balance: string | number): string {
@@ -306,7 +290,6 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
   showEmployee = false,
   canManage = true,
   onApprove,
-  onReject,
   onRevert,
   onCancel,
   onViewDetails,
@@ -332,7 +315,6 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
 }) {
   const status = request.status ?? "PENDING";
   const typeName = request.leaveType?.name ?? "Leave";
-  const Icon = leaveTypeIcon(typeName);
   const start = parseCalendarDate(request.startDate);
   const end = parseCalendarDate(request.endDate);
   const days = request.isHalfDay ? 0.5 : differenceInCalendarDays(end, start) + 1;
@@ -512,7 +494,6 @@ export function LeaveRequestDetailsSheet({
 
   const status = request.status ?? "PENDING";
   const typeName = request.leaveType?.name ?? "Leave";
-  const Icon = leaveTypeIcon(typeName);
   const start = parseCalendarDate(request.startDate);
   const end = parseCalendarDate(request.endDate);
   const days = request.isHalfDay ? 0.5 : differenceInCalendarDays(end, start) + 1;

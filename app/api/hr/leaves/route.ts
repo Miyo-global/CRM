@@ -48,7 +48,7 @@ export async function GET() {
       .map((t) => ({ id: t.id, name: t.name, daysPerYear: t.daysPerYear }));
     await ensureUserBalances(orgId, userId, allowedSeeded);
 
-    const [rawBalances, allTypes, requests, user, member] = await Promise.all([
+    const [rawBalances, allTypes, requests, user] = await Promise.all([
       db
         .select({
           id: leaveBalances.id,

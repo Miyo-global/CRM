@@ -95,10 +95,6 @@ function LevelLegend() {
   );
 }
 
-function getCategory(skillName: string): string {
-  return canonicalizeSkill(skillName)?.category ?? "Other";
-}
-
 function toCertDateInput(raw: Date | string | null): string {
   if (!raw) return "";
   const iso = typeof raw === "string" ? raw : new Date(raw).toISOString();

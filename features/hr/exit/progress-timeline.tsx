@@ -4,8 +4,6 @@ import { useResignationProgress } from "@/lib/api/hooks/hr";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Check, Circle, Clock, X } from "lucide-react";
-import type { Tone } from "@/lib/design/tones";
 
 const PROGRESS_STEPS = [
   { step: "SUBMITTED", label: "Submitted" },
@@ -41,14 +39,6 @@ export function ProgressTimeline({ id }: { id: number }) {
     <ol className="relative space-y-3 px-4 py-3 before:absolute before:top-6.5 before:bottom-6.5 before:left-7.5 before:w-px before:-translate-x-1/2 before:bg-border">
       {steps.map((step, i) => {
         const isCurrent = step.status === "current" || step.status === "active";
-        const node: { icon: typeof Check; tone: Tone } =
-          step.status === "completed"
-            ? { icon: Check, tone: "success" }
-            : step.status === "rejected"
-            ? { icon: X, tone: "danger" }
-            : isCurrent
-            ? { icon: Clock, tone: "brand" }
-            : { icon: Circle, tone: "neutral" };
         return (
           <li
             key={step.label ?? i}

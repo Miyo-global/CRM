@@ -196,7 +196,7 @@ export async function submitOnboarding() {
     revalidatePath("/onboarding");
     revalidatePath("/dashboard");
     return { success: true };
-  } catch (error) {
+  } catch {
     return { error: "Failed to submit onboarding" };
   }
 }

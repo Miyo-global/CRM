@@ -1,8 +1,8 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { db } from "@/lib/db";
-import { teamEvents, teamEventParticipants } from "@/lib/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { teamEvents } from "@/lib/db/schema";
+import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 

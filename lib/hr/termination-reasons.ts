@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { terminationReasons } from "@/lib/db/schema";
 import { DEFAULT_TERMINATION_REASONS } from "@/lib/hr/termination-reason-config";
-import { and, asc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import {
   isDuplicateTerminationReasonLabel,
   normalizeTerminationReasonLabel,

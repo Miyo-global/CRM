@@ -44,7 +44,7 @@ export function formatDateOnly(date: Date | string | null | undefined): string {
     if (year && month && day) {
       return `${year}-${month}-${day}`;
     }
-  } catch (e) {
+  } catch {
     // fallback
   }
 

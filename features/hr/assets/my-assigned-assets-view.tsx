@@ -1,6 +1,6 @@
 "use client";
 
-import { Laptop, MapPin, Package } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,10 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import { useMyAssignedAssets } from "@/lib/api/hooks";
-
-function assetIcon(type: string) {
-  return type.toLowerCase().includes("laptop") ? Laptop : Package;
-}
 
 export function MyAssignedAssetsView() {
   const { data: assets, isLoading, isError, error, refetch } = useMyAssignedAssets();
@@ -48,7 +44,6 @@ export function MyAssignedAssetsView() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {assets.map((asset) => {
-        const Icon = assetIcon(asset.type);
         return (
           <Card key={asset.id}>
             <CardContent className="p-4">

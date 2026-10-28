@@ -593,7 +593,7 @@ export async function getTeamDay(orgId: string) {
   );
 }
 
-export async function getManagerDashboard(orgId: string, userId: string) {
+export async function getManagerDashboard(orgId: string, _userId: string) {
   const [teamDay, pendingLeaves, pendingExpenses, overdueTickets] = await Promise.all([
     getTeamDay(orgId),
     db

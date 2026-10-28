@@ -1,4 +1,4 @@
-import { withAuth, ok, err } from "@/lib/api/helpers";
+import { withAuth, ok } from "@/lib/api/helpers";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";

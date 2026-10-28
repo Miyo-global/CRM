@@ -1,6 +1,6 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { interviews, users, candidates } from "@/lib/db/schema";
+import { interviews, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
 
       const event = await calendarResponse.json() as { id: string; htmlLink: string };
       return ok({ eventId: event.id, link: event.htmlLink });
-    } catch (e) {
+    } catch {
       return err("Failed to sync with Google Calendar.", 502);
     }
   });

@@ -23,7 +23,6 @@ function DetailHeader({
   back,
   avatar,
   icon,
-  iconTone = "brand",
   title,
   subtitle,
   status,

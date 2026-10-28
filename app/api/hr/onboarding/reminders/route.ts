@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
-import { withAdmin, ok, err } from "@/lib/api/helpers";
+import { withAdmin, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { onboardingTasks, users, notifications } from "@/lib/db/schema";
-import { eq, and, ne, sql, count } from "drizzle-orm";
+import { eq, and, sql, count } from "drizzle-orm";
 import { sendTemplateEmail } from "@/lib/email/sender";
 import { formatDateOnly } from "@/lib/date-utils";
 import { createAuditLog } from "@/lib/audit-log";

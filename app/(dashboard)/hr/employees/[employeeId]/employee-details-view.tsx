@@ -128,7 +128,6 @@ function maskTaxId(v: unknown): string | null {
 }
 
 function DetailCard({
-  icon: Icon,
   title,
   action,
   children,
@@ -400,7 +399,9 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
       : null;
 
   const setupLinkExpiresAt = typeof e.setupLinkExpiresAt === "string" ? new Date(e.setupLinkExpiresAt) : null;
-  const setupLinkExpired = !setupLinkExpiresAt || setupLinkExpiresAt.getTime() < Date.now();
+  // Read the clock once per mount, not on every render (react-hooks/purity).
+  const [now] = useState(() => Date.now());
+  const setupLinkExpired = !setupLinkExpiresAt || setupLinkExpiresAt.getTime() < now;
   const isTerminated = employee.isActive === false || !!e.terminatedAt;
   const resendSetupLink = useMutation({
     mutationFn: () => apiClient.post(`/hr/employees/${employee.id}/setup-link`, {}),

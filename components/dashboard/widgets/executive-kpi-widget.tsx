@@ -16,7 +16,7 @@ interface Kpi {
   href?: string;
 }
 
-function KpiTile({ label, value, icon, tone, href, className = "" }: Kpi & { className?: string }) {
+function KpiTile({ label, value, href, className = "" }: Kpi & { className?: string }) {
   const body = (
     <>
       <span className="min-w-0">

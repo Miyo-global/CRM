@@ -47,7 +47,6 @@ import {
   useTerminationReasons,
   useHrEmployees,
   type Termination,
-  type TerminationStatus,
 } from "@/lib/api/hooks/hr";
 import type { Employee } from "@/types/hr";
 

@@ -7,7 +7,7 @@ import Link from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
 import Underline from "@tiptap/extension-underline";
 import { TiptapToolbar } from "./tiptap-toolbar";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 
 interface TiptapEditorProps {
   content?: unknown;

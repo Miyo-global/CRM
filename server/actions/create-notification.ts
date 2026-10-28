@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { notifications, organizationMembers, users } from "@/lib/db/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { sendEmail } from "@/lib/email";
 import { buildNotificationEmail } from "@/lib/notifications/email";
 import { logger } from "@/lib/logger";

@@ -9,7 +9,6 @@ import {
 import { format, parse, startOfWeek, getDay, getDaysInMonth, startOfMonth } from "date-fns";
 import { enIN } from "date-fns/locale/en-IN";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 const localizer = dateFnsLocalizer({
   format,

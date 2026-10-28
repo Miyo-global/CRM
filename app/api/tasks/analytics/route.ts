@@ -2,7 +2,7 @@ import { type NextRequest } from "next/server";
 import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { tasks, users } from "@/lib/db/schema";
-import { eq, and, count, lt, gte, lte, isNotNull, sql } from "drizzle-orm";
+import { eq, and, count, lt, gte, isNotNull, sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 

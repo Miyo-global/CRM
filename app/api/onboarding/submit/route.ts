@@ -1,6 +1,6 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { onboardingSteps, organizationMembers, leaveTypes, leaveBalances, users } from "@/lib/db/schema";
+import { onboardingSteps, leaveTypes, leaveBalances, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 
 export async function POST() {

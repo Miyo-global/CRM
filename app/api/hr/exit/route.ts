@@ -127,7 +127,6 @@ export async function POST(req: NextRequest) {
       where: eq(users.id, session.user.id),
     });
 
-    const submissionDate = format(new Date(), "dd MMM yyyy");
     const lastWorkingDate = format(parseISO(body.lastWorkingDate), "dd MMM yyyy");
 
     // after(): an un-awaited send can be cut off once the response is sent

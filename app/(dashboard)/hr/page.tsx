@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { LayoutGrid, List, Plus } from "lucide-react";
@@ -48,8 +48,7 @@ export default function HRDashboardPage() {
 
   const searchParams = useSearchParams();
   const router = useRouter();
-  const pathname = usePathname();
-  const { page, pageSize, setPage, setPageSize, resetPage, updateParams } = usePaginationParams({
+  const { page, pageSize, setPage, setPageSize, updateParams } = usePaginationParams({
     defaultPageSize: PAGE_SIZE,
   });
 

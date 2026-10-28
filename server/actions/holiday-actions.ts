@@ -53,7 +53,7 @@ export async function addHoliday(data: {
 
     revalidatePath("/settings");
     return { success: true };
-  } catch (e) {
+  } catch {
     return { error: "Failed to add holiday" };
   }
 }
@@ -98,7 +98,7 @@ export async function deleteHoliday(holidayId: number) {
     await db.delete(holidays).where(and(eq(holidays.id, holidayId), eq(holidays.orgId, member.orgId)));
     revalidatePath("/settings");
     return { success: true };
-  } catch (e) {
+  } catch {
     return { error: "Failed to delete holiday" };
   }
 }

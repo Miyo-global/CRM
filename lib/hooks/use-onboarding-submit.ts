@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 type ActionResult = { success: true } | { success?: false; error?: string };
@@ -17,7 +17,9 @@ export function useOnboardingSubmit(
 ) {
   const [isLoading, setIsLoading] = useState(false);
   const optionsRef = useRef(options);
-  optionsRef.current = options;
+  useEffect(() => {
+    optionsRef.current = options;
+  });
 
   const handleSubmit = useCallback(
     async (values: Record<string, string | undefined>) => {

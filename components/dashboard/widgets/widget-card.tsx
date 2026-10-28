@@ -25,7 +25,6 @@ interface WidgetCardProps {
 function WidgetCard({
   title,
   icon,
-  tone = "brand",
   count,
   viewAllHref,
   viewAllLabel = "View all",

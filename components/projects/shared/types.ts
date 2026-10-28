@@ -1,4 +1,4 @@
-import type { TicketPriority, TicketType } from "@/types/projects";
+import type { TicketPriority } from "@/types/projects";
 
 export interface KanbanTicket {
   id: number;

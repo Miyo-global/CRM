@@ -44,9 +44,6 @@ export async function POST(
     const effectiveDateStr = existing.effectiveDate
       ? format(new Date(existing.effectiveDate), "dd-MM-yyyy")
       : "N/A";
-    const effectiveDateFormatted = existing.effectiveDate
-      ? format(new Date(existing.effectiveDate), "dd MMM yyyy")
-      : "N/A";
 
     try {
       const pdfBuffer = await generateTerminationLetterPdf({

@@ -141,7 +141,6 @@ function AppraisalStepper({ currentStage, stages }: {
         {STAGE_ORDER.map((stage, i) => {
           const isCompleted = completedSet.has(stage) || (currentIdx > i);
           const isCurrent = stage === currentStage;
-          const isPending = !isCompleted && !isCurrent;
           return (
             <div key={stage} className="flex items-start">
               <div className="flex flex-col items-center gap-1">

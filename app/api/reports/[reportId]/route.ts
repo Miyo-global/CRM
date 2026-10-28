@@ -188,8 +188,6 @@ async function payrollReport(orgId: string, month: string): Promise<ReportData> 
   };
 }
 
-const REPORT_IDS = ["headcount", "attendance-summary", "leave-register", "payroll-summary"] as const;
-
 export async function GET(req: NextRequest, { params }: { params: Promise<{ reportId: string }> }) {
   return withRoles(ADMIN_ROLES)(async (session) => {
     const { reportId } = await params;

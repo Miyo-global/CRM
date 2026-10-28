@@ -52,8 +52,6 @@ import type {
   Holiday,
   WorkLog,
   OrgChartNode,
-  PaginatedResult,
-  PaginatedEmployees,
 } from "@/types/hr";
 import { likePattern } from "@/lib/db/escape-like";
 

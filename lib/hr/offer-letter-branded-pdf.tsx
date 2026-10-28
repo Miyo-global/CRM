@@ -4,7 +4,7 @@ import { LOGO_PNG_PATH } from "@/lib/constants/paths";
 import { COMPANY_ADDRESS, COMPANY_PHONE, SUPPORT_EMAIL } from "@/lib/constants/company";
 import {
   Document,
-  Image,
+  Image as PdfImage,
   Page,
   Text,
   View,
@@ -15,7 +15,6 @@ import { BRAND } from "@/lib/design/brand-hex";
 
 
 const NAVY = BRAND.ink;
-const GOLD = BRAND.gold;
 const MUTED = BRAND.inkMuted;
 const BORDER = BRAND.border;
 
@@ -239,15 +238,15 @@ function OfferLetterPage({
   return (
     <Page size="A4" style={styles.page}>
       {logoDataUri && (
-        <Image src={logoDataUri} style={styles.watermark} fixed />
+        <PdfImage src={logoDataUri} style={styles.watermark} fixed />
       )}
       {logoDataUri && (
-        <Image src={logoDataUri} style={styles.stamp} />
+        <PdfImage src={logoDataUri} style={styles.stamp} />
       )}
 
       <View style={styles.headerRow} fixed>
         {logoDataUri ? (
-          <Image src={logoDataUri} style={styles.logoBox} />
+          <PdfImage src={logoDataUri} style={styles.logoBox} />
         ) : (
           <View style={styles.logoFallback}>
             <Text style={styles.logoLetter}>M</Text>

@@ -1,6 +1,6 @@
-import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
+import { withAuth, ok, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { users, onboardingSteps, organizationMembers } from "@/lib/db/schema";
+import { users, onboardingSteps } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";

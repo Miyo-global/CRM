@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useCallback, memo } from "react";
+import { use, useCallback } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2, Circle, Clock, AlertCircle } from "lucide-react";

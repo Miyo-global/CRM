@@ -7,7 +7,7 @@ import {
   leaveRequests,
   jobPostings,
 } from "@/lib/db/schema";
-import { eq, and, gte, lte, count, sql } from "drizzle-orm";
+import { eq, and, gte, lte, count } from "drizzle-orm";
 import { cached, CACHE_TTL } from "@/lib/hr-cache";
 import {
   daysUntilNextBirthday,
@@ -31,7 +31,6 @@ export async function GET() {
         const [year, month] = todayStr.split("-").map(Number);
         const monthStart = `${todayStr.slice(0, 7)}-01`;
         const monthEnd = formatDateOnly(new Date(Date.UTC(year, month, 0)));
-        const next7Days = formatDateOnly(new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000));
 
         const [
           totalResult,

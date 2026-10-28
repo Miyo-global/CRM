@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { leaveRequests, organizationMembers, users } from "@/lib/db/schema";
 import { ROLES } from "@/lib/constants/roles";
-import { and, eq, inArray, lte, gte, notInArray } from "drizzle-orm";
+import { and, eq, inArray, lte, gte } from "drizzle-orm";
 import { formatDateOnly } from "@/lib/date-utils";
 
 const CHAIN_ROLES = [ROLES.CEO, ROLES.HR, ROLES.ADMIN] as const;

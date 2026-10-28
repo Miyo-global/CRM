@@ -1,8 +1,8 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { salaryStructures, departmentMembers, departments } from "@/lib/db/schema";
-import { eq, and, avg, min, max, count, sql } from "drizzle-orm";
-import { cached, CACHE_TTL } from "@/lib/cache";
+import { eq, avg, min, max, count } from "drizzle-orm";
+import { cached } from "@/lib/cache";
 
 const SALARY_BANDS = [
   { label: "< 3L", min: 0, max: 300_000 },

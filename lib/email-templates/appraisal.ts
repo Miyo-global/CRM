@@ -1,4 +1,4 @@
-import { getEmailTemplate, baseUrl, escapeHtml } from "./base";
+import { getEmailTemplate, escapeHtml } from "./base";
 import { BRAND } from "@/lib/design/brand-hex";
 
 export function getSelfReviewReminderEmail(

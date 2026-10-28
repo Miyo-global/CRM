@@ -133,7 +133,6 @@ export default function WorkLogsPage() {
 
   const year = filters.year;
   const quarter = filters.quarter;
-  const selectedUserId = filters.selectedUserId;
 
   const currentUserId = session?.user?.id;
 

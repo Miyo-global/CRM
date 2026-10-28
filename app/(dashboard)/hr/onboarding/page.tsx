@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { QueryErrorState } from "@/components/ui/query-error-state";
 import type { Tone } from "@/lib/design/tones";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";

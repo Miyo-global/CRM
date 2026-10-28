@@ -294,11 +294,9 @@ function CompletionTile({
 }
 
 function SectionCard({
-  icon: Icon,
   title,
   badge,
   children,
-  tone = "neutral",
 }: {
   icon: React.ComponentType<{ className?: string }>;
   title: string;

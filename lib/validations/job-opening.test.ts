@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { jobOpeningSchema, jobOpeningUpdateSchema, JOB_OPENING_LIMITS } from "./job-opening";
-import { DEFAULT_CURRENCY } from "@/lib/constants/locale";
 
 const fullPublish = {
   status: "OPEN" as const,

@@ -80,7 +80,7 @@ export default function DocumentsPage() {
 
   const { data: rawDocuments = [], isLoading, isError, error, refetch } = useHrDocuments(undefined, typeFilter);
   const { data: rawPolicies = [] } = useHrDocuments(undefined, "POLICY");
-  const { data: statsData } = useHrDocumentStats();
+  useHrDocumentStats();
   // Same query as RichDocumentsSection (shared cache) so the total counts created documents too.
   const { data: richDocs = [] } = useRichDocuments();
   const deleteMutation = useDeleteDocument();

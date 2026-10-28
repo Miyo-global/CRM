@@ -70,7 +70,7 @@ async function queryLeaves(conditions: SQL[], orgId: string, userId: string, isA
 }
 
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   return withAuth(async (session) => {
     const member = await db.query.organizationMembers.findFirst({
       where: eq(organizationMembers.userId, session.user.id),

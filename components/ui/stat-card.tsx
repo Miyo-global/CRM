@@ -49,7 +49,6 @@ export function StatCard({
   trend,
   href,
   className,
-  index = 0,
   sparkline,
 }: StatCardProps) {
 

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { db } from "@/lib/db";
-import { organizationMembers, organizations } from "@/lib/db/schema";
+import { organizationMembers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 // Server actions check revocation and deactivation too (SEC-0007).
 import { liveAuth as auth } from "@/lib/auth/live-session";

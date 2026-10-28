@@ -50,7 +50,6 @@ export function WorkLogMonthGroup({
   logs,
   selectedUserId,
   currentUserId,
-  isAdminOrCeo,
   onSave,
   isSaving,
 }: WorkLogMonthGroupProps) {

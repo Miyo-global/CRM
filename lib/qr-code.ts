@@ -1,7 +1,6 @@
 import QRCode from "qrcode";
 import sharp from "sharp";
 import { readFile } from "fs/promises";
-import { join } from "path";
 import { BRAND } from "@/lib/design/brand-hex";
 
 interface GenerateQRCodeWithLogoOptions {
@@ -73,10 +72,10 @@ export async function generateQRCodeWithLogo(
         .toBuffer();
 
       return finalImage;
-    } catch (logoError) {
+    } catch {
       return qrCodeBuffer;
     }
-  } catch (error) {
+  } catch {
     throw new Error("Failed to generate QR code");
   }
 }

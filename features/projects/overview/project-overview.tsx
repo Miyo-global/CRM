@@ -12,7 +12,6 @@ import { ProjectUpdates } from "./project-updates";
 import { useProject } from "@/lib/api/hooks/projects";
 
 const HEALTH_LABEL = { on_track: "On track", at_risk: "At risk", off_track: "Off track" } as const;
-const HEALTH_TONE = { on_track: "success", at_risk: "warning", off_track: "danger" } as const;
 
 function OverviewSkeleton() {
   return (

@@ -11,7 +11,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { resolveImageUrl } from "@/lib/utils";
 import { getInitials } from "@/lib/format-utils";
 import { format, formatDistanceToNow } from "date-fns";
-import { isTicketType, typeIcons, typeTones, DEFAULT_TICKET_ICON } from "./ticket-types";
 
 const MAX_ROWS = 6;
 
@@ -64,8 +63,6 @@ export const RecentActivityCard = memo(function RecentActivityCard({ items, isLo
         ) : items && items.length > 0 ? (
           <ul className="-mx-2">
             {items.slice(0, MAX_ROWS).map((item) => {
-              const type = isTicketType(item.type) ? item.type : null;
-              const TypeIcon = type ? typeIcons[type] : DEFAULT_TICKET_ICON;
               return (
                 <li key={item.id}>
                   <WidgetListRow

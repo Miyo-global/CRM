@@ -1,7 +1,7 @@
 "use client";
 
 import { getErrorMessage } from "@/lib/get-error-message";
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import {
   usePolicyAcknowledgments,
   useAcknowledgePolicy,

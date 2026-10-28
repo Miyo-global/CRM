@@ -46,6 +46,7 @@ export default async function AtsInterviewsPage() {
       and(
         eq(interviews.orgId, orgId),
         jobIds ? inArray(interviews.jobPostingId, jobIds) : undefined,
+        // eslint-disable-next-line react-hooks/purity -- async Server Component, rendered per request
         gte(interviews.scheduledAt, new Date(Date.now() - 86_400_000)),
       ),
     )

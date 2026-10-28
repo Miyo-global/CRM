@@ -162,7 +162,7 @@ export default function PayrollPage() {
 
   // Preview comes from the server: same loader, same pure function as generate,
   // so the preview is exactly what gets saved (A3).
-  const { data: serverPreview, isFetching: isPreviewLoading } = usePayrollPreview({
+  const { data: serverPreview } = usePayrollPreview({
     userId: selectedEmployee,
     month: selectedMonth,
     bonus: parseFloat(bonus) || 0,

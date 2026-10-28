@@ -1,17 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Phone,
-  Mail,
-  Calendar,
-  FileText,
-  CheckCircle2,
-  AlertTriangle,
-  Ticket,
-  type LucideIcon,
-} from "lucide-react";
-import type { Tone } from "@/lib/design/tones";
 
 type ActivityType = "deal_won" | "meeting" | "proposal" | "call" | "email" | "ticket" | "escalation";
 
@@ -26,22 +15,10 @@ interface ActivityFeedProps {
   items: ActivityItem[];
 }
 
-const typeConfig: Record<ActivityType, { icon: LucideIcon; tone: Tone }> = {
-  deal_won: { icon: CheckCircle2, tone: "success" },
-  meeting: { icon: Calendar, tone: "info" },
-  proposal: { icon: FileText, tone: "plum" },
-  call: { icon: Phone, tone: "warning" },
-  email: { icon: Mail, tone: "neutral" },
-  ticket: { icon: Ticket, tone: "info" },
-  escalation: { icon: AlertTriangle, tone: "danger" },
-};
-
 export function ActivityFeed({ items }: ActivityFeedProps) {
   return (
     <ol className="relative">
       {items.map((item, i) => {
-        const config = typeConfig[item.type];
-
         return (
           <motion.li
             key={i}

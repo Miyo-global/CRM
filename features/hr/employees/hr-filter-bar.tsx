@@ -11,7 +11,7 @@ import {
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ROLE_LABELS, type StatusFilter, type RoleFilter } from "./hr-types";
+import { type StatusFilter, type RoleFilter } from "./hr-types";
 
 const ROLE_OPTIONS = [
   { value: "All", label: "All Roles" },

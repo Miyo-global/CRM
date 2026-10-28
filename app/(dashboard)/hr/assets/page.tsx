@@ -188,8 +188,6 @@ export default function HrAssetsPage() {
   const employees = employeesData as { data?: Array<{ id: string; name: string }>; items?: Array<{ id: string; name: string }> } | Array<{ id: string; name: string }> | undefined;
   const employeeList: Array<{ id: string; name: string }> = Array.isArray(employees) ? employees : (employees?.data ?? employees?.items ?? []);
 
-  const resolvedType = useMemo(() => resolveAssetType(type, customType), [type, customType]);
-
   const assignedAssetsForEmployee = useMemo(() => {
     if (!assignedTo) return [];
     return items.filter(

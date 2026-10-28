@@ -19,7 +19,7 @@ import {
   customStates,
   projectStatuses,
 } from "@/lib/db/schema";
-import { eq, and, desc, asc, sql, inArray, or, gte, lte, count, isNull } from "drizzle-orm";
+import { eq, and, desc, asc, sql, or, gte, lte, count, isNull } from "drizzle-orm";
 import { getTodayString } from "@/lib/date-utils";
 import { computeHealth, isDoneStatus } from "@/lib/projects/project-health";
 import type {

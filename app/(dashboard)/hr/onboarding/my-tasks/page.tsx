@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
@@ -37,6 +37,12 @@ function AllDoneBanner() {
   );
 }
 
+function withoutId(ids: ReadonlySet<number>, id: number): ReadonlySet<number> {
+  const next = new Set(ids);
+  next.delete(id);
+  return next;
+}
+
 export default function MyOnboardingTasksPage() {
   const { data: session } = useSession();
   const userId = session?.user?.id ?? "";
@@ -44,7 +50,7 @@ export default function MyOnboardingTasksPage() {
   const { data: tasks, isLoading, isError, error, refetch } = useUserOnboarding(userId);
   const completeTask = useCompleteOnboardingTask();
 
-  const togglingIds = useRef<Set<number>>(new Set());
+  const [togglingIds, setTogglingIds] = useState<ReadonlySet<number>>(() => new Set());
 
   const totalTasks = tasks?.length ?? 0;
   const completedTasks = tasks?.filter((t) => t.status === "COMPLETED").length ?? 0;
@@ -64,15 +70,15 @@ export default function MyOnboardingTasksPage() {
 
   const handleToggle = useCallback(
     (taskId: number, newStatus: "COMPLETED" | "PENDING") => {
-      togglingIds.current.add(taskId);
+      setTogglingIds((prev) => new Set(prev).add(taskId));
       completeTask.mutate(
         { taskId, status: newStatus },
         {
           onSuccess: () => {
-            togglingIds.current.delete(taskId);
+            setTogglingIds((prev) => withoutId(prev, taskId));
           },
           onError: (e) => {
-            togglingIds.current.delete(taskId);
+            setTogglingIds((prev) => withoutId(prev, taskId));
             toast.error(getErrorMessage(e));
           },
         }
@@ -137,7 +143,7 @@ export default function MyOnboardingTasksPage() {
                   task={task}
                   onToggle={handleToggle}
                   isToggling={
-                    completeTask.isPending && togglingIds.current.has(task.id)
+                    completeTask.isPending && togglingIds.has(task.id)
                   }
                 />
               ))}
@@ -152,7 +158,7 @@ export default function MyOnboardingTasksPage() {
                   task={task}
                   onToggle={handleToggle}
                   isToggling={
-                    completeTask.isPending && togglingIds.current.has(task.id)
+                    completeTask.isPending && togglingIds.has(task.id)
                   }
                 />
               ))}

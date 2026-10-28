@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { taskSequences, taskSequenceSteps, tasks, organizationMembers } from "@/lib/db/schema";
+import { taskSequences, tasks, organizationMembers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { addDays } from "date-fns";

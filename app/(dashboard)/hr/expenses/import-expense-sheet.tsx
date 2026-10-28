@@ -76,11 +76,6 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
     fileInputRef.current?.click();
   }, []);
 
-  const handleCancel = useCallback(() => {
-    resetState();
-    onOpenChange(false);
-  }, [resetState, onOpenChange]);
-
   const handleCategoryMappingChange = useCallback((original: string, value: string) => {
     setCategoryMapping((prev) => ({ ...prev, [original]: value }));
   }, []);

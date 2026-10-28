@@ -54,14 +54,6 @@ const createViewSchema = z.object({
 });
 type CreateViewForm = z.infer<typeof createViewSchema>;
 
-const layoutIconComponents: Record<string, typeof Kanban> = {
-  board: Kanban,
-  list: List,
-  table: LayoutGrid,
-  calendar: LayoutGrid,
-  gantt: LayoutGrid,
-};
-
 const layoutIcons: Record<string, React.ReactNode> = {
   board: <Kanban className="size-4" aria-hidden="true" />,
   list: <List className="size-4" aria-hidden="true" />,

@@ -6,7 +6,6 @@ import { db } from "@/lib/db";
 import { notifications, users } from "@/lib/db/schema";
 import { sendTemplateEmail } from "@/lib/email/sender";
 import { isEmailConfigured } from "@/lib/email/config";
-import { appUrl } from "@/lib/app-url";
 import { logger } from "@/lib/logger";
 
 export interface CalendarEventNotifyResult {

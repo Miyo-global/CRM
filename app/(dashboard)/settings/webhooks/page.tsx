@@ -9,7 +9,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -124,7 +123,6 @@ function WebhooksContent() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [deliveriesFor, setDeliveriesFor] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [showSecrets, setShowSecrets] = useState<Record<number, boolean>>({});
   const [url, setUrl] = useState("");
   const [description, setDescription] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);

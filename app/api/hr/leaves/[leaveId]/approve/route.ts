@@ -1,6 +1,6 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { leaveRequests, leaveBalances, leaveTypes, users } from "@/lib/db/schema";
+import { leaveRequests, leaveTypes, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { writeAuditLog } from "@/lib/db/audit";
 import { createNotification } from "@/server/actions/create-notification";
@@ -8,7 +8,6 @@ import { resolveRequestNotifications } from "@/lib/notifications/resolve";
 import { sendLeaveStatusUpdateEmail } from "@/lib/email";
 import { canApproveLeaveRequest } from "@/lib/auth/leave-approval";
 import { deductApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
-import { LEAVE_POLICY } from "@/lib/leave-policy";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 

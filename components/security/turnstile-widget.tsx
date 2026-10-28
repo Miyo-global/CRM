@@ -31,7 +31,9 @@ export function TurnstileWidget({ onToken }: { onToken: (token: string | null) =
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const holder = useRef<HTMLDivElement>(null);
   const onTokenRef = useRef(onToken);
-  onTokenRef.current = onToken;
+  useEffect(() => {
+    onTokenRef.current = onToken;
+  });
 
   useEffect(() => {
     if (!siteKey || !holder.current) return;

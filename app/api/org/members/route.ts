@@ -1,7 +1,7 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { users, organizationMembers } from "@/lib/db/schema";
-import { eq, and, asc, inArray } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 
 export async function GET() {

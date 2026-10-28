@@ -1,7 +1,7 @@
 import { withAdmin, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { attendance, organizationMembers, users, departments } from "@/lib/db/schema";
-import { eq, and, gte, lte, sql, count } from "drizzle-orm";
+import { attendance, users, departments } from "@/lib/db/schema";
+import { eq, and, gte, lte, count } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {

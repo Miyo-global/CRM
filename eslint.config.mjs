@@ -16,6 +16,18 @@ const eslintConfig = defineConfig([
       "react-hooks/immutability": "warn",
       "react-hooks/exhaustive-deps": "warn",
       "@typescript-eslint/no-explicit-any": "error",
+      // `_`-prefixed names and rest-sibling omits (`{ secret: _s, ...safe }`)
+      // are deliberate.
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
+      ],
       "max-lines": ["warn", { max: 800, skipBlankLines: true, skipComments: true }],
     },
   },

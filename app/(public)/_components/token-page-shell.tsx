@@ -38,8 +38,6 @@ export function TokenPageShell({
 
 /** Centered state block (expired / error / success) with a circular icon chip. */
 export function TokenState({
-  icon,
-  tone,
   title,
   children,
 }: {

@@ -218,7 +218,7 @@ export async function deleteEmployee(userId: string) {
 
       revalidatePath("/hr/employees");
       return { success: true };
-  } catch (error) {
+  } catch {
       return { error: "Failed to delete employee" };
   }
 }

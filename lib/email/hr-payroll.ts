@@ -1,6 +1,4 @@
-import { sendEmail, sendTemplateEmail } from "./sender";
-import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
-import { BRAND } from "@/lib/design/brand-hex";
+import { sendTemplateEmail } from "./sender";
 
 /**
  * MIYO-0242: the hand-written payroll-approved template.

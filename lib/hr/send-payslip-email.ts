@@ -8,7 +8,6 @@ import { buildPayslipPdfDataFromPayroll, generatePayslipPdf } from "@/lib/paysli
 import { countApprovedLeaveDaysInMonth } from "@/server/queries/hr/payslip-leave-days";
 import { logger } from "@/lib/logger";
 import { redis } from "@/lib/redis";
-import { appUrl } from "@/lib/app-url";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 
 export type PayslipEmailError = "no_email" | "send_failed";

@@ -8,7 +8,6 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { WidgetCard, WidgetListRow } from "@/components/dashboard/widgets/widget-card";
 import { WidgetError } from "@/components/dashboard/widgets/view-all-link";
 import type { Tone } from "@/lib/design/tones";
-import { isTicketType, typeIcons, typeTones, DEFAULT_TICKET_ICON } from "./ticket-types";
 
 const MAX_VISIBLE_TICKETS = 6;
 
@@ -61,8 +60,6 @@ export const MyIssuesCard = memo(function MyIssuesCard({ tickets, isLoading, err
         ) : tickets.length > 0 ? (
           <ul className="-mx-2">
             {tickets.slice(0, MAX_VISIBLE_TICKETS).map((ticket) => {
-              const type = isTicketType(ticket.type) ? ticket.type : null;
-              const TypeIcon = type ? typeIcons[type] : DEFAULT_TICKET_ICON;
               const project = ticket.project;
               const inFlight = ticket.status === "IN_PROGRESS" || ticket.status === "IN_REVIEW";
               return (

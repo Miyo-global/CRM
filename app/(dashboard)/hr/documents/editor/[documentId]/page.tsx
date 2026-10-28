@@ -2,7 +2,7 @@
 import { getErrorMessage } from "@/lib/get-error-message";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useRichDocument, useUpdateRichDocument, usePublishRichDocument } from "@/lib/api/hooks/hr";
 import dynamic from "next/dynamic";
 import { PageWrapper } from "@/components/ui/page-wrapper";
@@ -25,7 +25,6 @@ const TiptapEditor = dynamic(
 
 export default function DocumentEditorPage() {
   const params = useParams<{ documentId: string }>();
-  const router = useRouter();
   const documentId = Number(params.documentId);
 
   const { data: doc, isLoading, isError, error, refetch } = useRichDocument(documentId);

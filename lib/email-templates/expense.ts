@@ -1,4 +1,4 @@
-import { getEmailTemplate, baseUrl, logoUrl, escapeHtml } from "./base";
+import { getEmailTemplate, escapeHtml } from "./base";
 import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
 import { BRAND } from "@/lib/design/brand-hex";
 

@@ -1,6 +1,6 @@
 import { withAdmin, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { payrolls, users, organizationMembers } from "@/lib/db/schema";
+import { payrolls, users } from "@/lib/db/schema";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 

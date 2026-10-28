@@ -1,7 +1,7 @@
-import { withAdmin, ok, err, parseQuery } from "@/lib/api/helpers";
+import { withAdmin, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { organizationMembers, users, departments } from "@/lib/db/schema";
-import { eq, and, count, sql } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 

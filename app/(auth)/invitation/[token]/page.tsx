@@ -23,6 +23,7 @@ import { getRoleLabel, invitationScopeText } from "@/lib/rbac/roles";
 
 /** Full page load, so the new session cookie is read fresh. */
 function openDashboard() {
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- full page load so the new session cookie is read fresh
   window.location.href = "/dashboard";
 }
 

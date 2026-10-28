@@ -1,6 +1,5 @@
 import { db } from "@/lib/db";
 import {
-  organizations,
   organizationMembers,
   users,
   attendance,

@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { bonuses, users } from "@/lib/db/schema";
-import { and, desc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import {
   applyBonusFilters,
   type BonusListFilters,

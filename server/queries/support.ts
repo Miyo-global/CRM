@@ -10,7 +10,6 @@ import {
   users,
 } from "@/lib/db/schema";
 import { eq, and, or, desc, sql, inArray } from "drizzle-orm";
-import { subDays } from "date-fns";
 import { isSlaBreached } from "@/lib/constants/support-sla";
 
 type SupportActivityType = "ticket" | "escalation";

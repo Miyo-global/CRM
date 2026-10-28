@@ -298,7 +298,6 @@ export default function DocumentTemplatesPage() {
                   <TableBody>
                     {list.map((template, index) => {
                       const cfg = getTypeConfig(template.type);
-                      const TypeIcon = cfg.icon;
                       return (
                         <TableRow key={template.id}>
                           <TableCell className="text-center text-xs text-muted-foreground tabular-nums">

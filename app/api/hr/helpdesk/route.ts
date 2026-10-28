@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { helpdeskTickets, users, organizationMembers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
-import type { TicketPriority, TicketStatus } from "@/types/hr";
+import type { TicketStatus } from "@/types/hr";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { sendHelpdeskTicketEmail } from "@/lib/email";

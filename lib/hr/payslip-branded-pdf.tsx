@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import React, { type ReactNode } from "react";
 import { LOGO_PNG_PATH, LOGO_SVG_PATH, LOGO_WORDMARK_PATH } from "@/lib/constants/paths";
-import { Document, Image, Page, Text, View, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
+import { Document, Image as PdfImage, Page, Text, View, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
 import type { PayslipViewModel } from "@/lib/hr/payslip-view-model";
 import { DEFAULT_LOCALE } from "@/lib/constants/locale";
 import { BRAND } from "@/lib/design/brand-hex";
@@ -195,7 +195,7 @@ function PayslipPdfPage({ vm, logoDataUri }: { vm: PayslipViewModel; logoDataUri
     <Page size="A4" style={styles.page}>
       <View style={styles.headerRow}>
         {logoDataUri ? (
-          <Image src={logoDataUri} style={styles.logoBox} />
+          <PdfImage src={logoDataUri} style={styles.logoBox} />
         ) : (
           <View style={styles.logoFallback}>
             <Text style={styles.logoLetter}>M</Text>

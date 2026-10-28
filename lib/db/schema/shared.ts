@@ -1,5 +1,5 @@
 
-import { pgTable, text, serial, timestamp, boolean, jsonb, integer, index, unique, numeric, date } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, boolean, jsonb, integer, index, unique, numeric } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { notificationTypeEnum, subscriptionStatusEnum, subscriptionPlanEnum } from "./enums";
 import { organizations, users } from "./auth";

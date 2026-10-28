@@ -4,7 +4,6 @@ import { db } from "@/lib/db";
 import { projects, ticketAssignees, tickets, ticketWatchers, users } from "@/lib/db/schema";
 import { sendTicketAssignmentEmail } from "@/lib/email";
 import { createNotification } from "@/server/actions/create-notification";
-import { logger } from "@/lib/logger";
 import { recordTicketActivity } from "@/lib/projects/record-ticket-activity";
 import { ticketTitleSchema } from "@/lib/validations/project";
 import { afterResponse } from "@/lib/after-response";

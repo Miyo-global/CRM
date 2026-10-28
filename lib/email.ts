@@ -72,8 +72,6 @@ import {
 } from "./email-templates";
 import type { MonthlyExpenseReportRow } from "./email-templates";
 import { generateMonthlyExpenseReportXlsx } from "./monthly-expense-report-xlsx";
-import { CURRENCY_SYMBOL } from "@/lib/constants/locale";
-import { BRAND } from "@/lib/design/brand-hex";
 
 export type { EmailOptions, EmailAttachment };
 

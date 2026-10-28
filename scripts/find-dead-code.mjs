@@ -10,7 +10,7 @@
  *   node scripts/find-dead-code.mjs --check  # exit 1 if anything is unreachable (CI)
  *
  * Entry points are, by definition, never "unreferenced": Next.js convention
- * files (page/layout/route/…), middleware, instrumentation, Sentry configs,
+ * files (page/layout/route/…), proxy (Next 16 middleware), instrumentation, Sentry configs,
  * tests, scripts, drizzle migrations and *.config.*. Ambient declarations
  * (*.d.ts) are excluded too — tsconfig loads them without an import.
  */
@@ -23,7 +23,7 @@ const CHECK = process.argv.includes("--check");
 
 const files = execSync(
   `find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.mjs" \\) ` +
-    `-not -path "./node_modules/*" -not -path "./.next/*" ` +
+    `-not -path "./node_modules/*" -not -path "./.next/*" -not -path "./.claude/*" ` +
     `-not -path "./graphify-out/*" -not -path "./drizzle/*"`,
   { encoding: "utf8", maxBuffer: 1 << 28 },
 ).trim().split("\n").map((f) => path.resolve(f));
@@ -54,6 +54,14 @@ for (const file of files) {
     const resolved = resolveSpecifier(match[1] ?? match[2], file);
     if (resolved) targets.add(resolved);
   }
+  // Config files point at modules by path string, e.g. vitest's
+  // `alias: { "server-only": path.resolve(__dirname, "test/server-only-stub.ts") }`.
+  if (/\.config\.(ts|mjs)$/.test(file)) {
+    for (const match of src.matchAll(/["']([\w./-]+\.(?:ts|tsx|mjs))["']/g)) {
+      const candidate = path.resolve(path.dirname(file), match[1]);
+      if (known.has(candidate)) targets.add(candidate);
+    }
+  }
   imports.set(file, targets);
 }
 
@@ -62,7 +70,7 @@ function isEntryPoint(file) {
   const name = path.basename(file);
   return (
     /^(page|layout|route|template|loading|error|global-error|not-found|default|opengraph-image|twitter-image|icon|apple-icon|sitemap|robots|manifest)\.(ts|tsx)$/.test(name) ||
-    /^(middleware|instrumentation)\.ts$/.test(rel) ||
+    /^(middleware|proxy|instrumentation|instrumentation-client)\.ts$/.test(rel) ||
     /^sentry\..*\.ts$/.test(name) ||
     /\.(test|spec)\.(ts|tsx)$/.test(name) ||
     /\.config\.(ts|mjs)$/.test(name) ||

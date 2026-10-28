@@ -1,8 +1,8 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { organizationMembers, users } from "@/lib/db/schema";
-import { eq, and, isNotNull, count, sql } from "drizzle-orm";
-import { cached, CACHE_TTL } from "@/lib/cache";
+import { eq, and } from "drizzle-orm";
+import { cached } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 

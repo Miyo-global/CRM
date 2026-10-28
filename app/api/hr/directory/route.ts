@@ -1,6 +1,6 @@
 import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
-import { users, organizationMembers, departments, departmentMembers } from "@/lib/db/schema";
+import { users, organizationMembers, departments } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";

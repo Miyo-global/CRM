@@ -1,4 +1,4 @@
-import { sendEmail, sendTemplateEmail } from "./sender";
+import { sendTemplateEmail } from "./sender";
 import { baseUrl } from "./sender";
 import { formatIST, formatDisplayDate } from "@/lib/date-utils";
 import { getRoleLabel } from "@/lib/rbac/roles";

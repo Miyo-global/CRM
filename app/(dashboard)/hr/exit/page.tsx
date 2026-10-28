@@ -8,7 +8,6 @@ import {
   useHrReviewResignation,
   useCeoReviewResignation,
   useWithdrawResignation,
-  useResignationProgress,
   type Resignation,
 } from "@/lib/api/hooks/hr";
 import { PageWrapper } from "@/components/ui/page-wrapper";

@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
       .returning();
 
     afterResponse("hr/performance/reviews", async () => {
-      const [employee, reviewer] = await Promise.all([
+      const [employee] = await Promise.all([
         db.query.users.findFirst({
           where: eq(users.id, body.userId),
           columns: { email: true, name: true },

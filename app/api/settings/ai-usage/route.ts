@@ -1,17 +1,14 @@
 import { withAuth, ok, err } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { aiUsageLogs } from "@/lib/db/schema";
-import { eq, gte, sum, sql, desc } from "drizzle-orm";
+import { eq, sum, sql, desc } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
-import { subDays } from "date-fns";
 
 export async function GET() {
   return withAuth(async (session) => {
     if (!isAdminOrOwner(session.user.role)) {
       return err("Forbidden", 403);
     }
-
-    const since = subDays(new Date(), 30);
 
     const [totals, byFeature, daily] = await Promise.all([
       db

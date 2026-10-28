@@ -1,4 +1,4 @@
-import { getEmailTemplate, baseUrl, logoUrl, escapeHtml } from "./base";
+import { getEmailTemplate, escapeHtml } from "./base";
 import { BRAND } from "@/lib/design/brand-hex";
 
 export function getInvitationEmailTemplate(invitationUrl: string, organizationName: string, inviterName?: string): string {

@@ -9,7 +9,6 @@ import { sendResignationApprovedEmail } from "@/lib/email";
 import { isExitFinalApprover } from "@/lib/constants/roles";
 import { createTerminationFromResignation } from "@/lib/hr/resignation-termination";
 import { after } from "next/server";
-import { format } from "date-fns";
 import type { NextRequest } from "next/server";
 
 const updateSchema = z.object({
@@ -114,7 +113,6 @@ export async function PATCH(
       });
       if (employee?.email) {
         const lwd = existing.lastWorkingDate ? new Date(existing.lastWorkingDate) : new Date();
-        const sub = existing.createdAt ?? new Date();
         const to = employee.email;
         after(() => sendResignationApprovedEmail(to, lwd).catch(() => undefined));
       }

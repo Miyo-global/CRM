@@ -6,13 +6,11 @@ import { queryKeys } from "@/lib/query-keys";
 import type {
   ReviewCycle,
   PerformanceReview,
-  Goal,
   OneOnOneMeeting,
   CreateReviewCycleInput,
   UpdateReviewCycleInput,
   CreatePerformanceReviewInput,
   UpdatePerformanceReviewInput,
-  CreateGoalInput,
   CreateOneOnOneInput,
   UpdateOneOnOneInput,
 } from "@/types/hr";

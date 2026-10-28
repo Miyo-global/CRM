@@ -64,6 +64,7 @@ export default async function JobPipelinePage({
   ]);
 
   const firstStageId = stages.find((s) => s.type === "APPLIED")?.id ?? stages[0]?.id ?? null;
+  // eslint-disable-next-line react-hooks/purity -- async Server Component, rendered per request
   const now = Date.now();
   const cards = rows.map((row) => {
     const since = row.lastMovedAt ?? row.appliedAt;

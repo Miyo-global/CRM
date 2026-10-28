@@ -7,7 +7,6 @@ import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { isExitFinalApprover } from "@/lib/constants/roles";
 import { after } from "next/server";
-import { format } from "date-fns";
 import { sendResignationApprovedEmail } from "@/lib/email";
 import { createTerminationFromResignation } from "@/lib/hr/resignation-termination";
 
