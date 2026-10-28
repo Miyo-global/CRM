@@ -86,6 +86,7 @@ const nextConfig: NextConfig = {
       { source: "/hr/promotions", destination: "/hr/career-promotions", permanent: false },
       { source: "/performance/promotions", destination: "/hr/career-promotions", permanent: false },
       { source: "/performance/career-ladders", destination: "/hr/career-ladders", permanent: false },
+      { source: "/hr/evaluations", destination: "/hr/career-evaluations", permanent: false },
       // --- end QA cluster C ---
     ];
   },
