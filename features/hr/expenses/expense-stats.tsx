@@ -23,19 +23,15 @@ function Amount({ value }: { value: number }) {
 }
 
 export function AdminExpenseStats({ stats, pendingCount }: AdminExpenseStatsProps) {
-  const totalClaimed =
-    (stats?.approvedAmount || 0) +
-    (stats?.pendingAmount || 0) +
-    (stats?.rejectedAmount || 0) +
-    (stats?.paidAmount || 0);
-
+  // Day- and month-bounded on the server (IST); all-time status totals made
+  // these tiles show old rejections as "today" and count rejected as claimed.
   return (
     <StatsStrip
       items={[
         { label: "Pending Approval", value: pendingCount, icon: AlertCircle, tone: pendingCount > 0 ? "warning" : undefined },
-        { label: "Approved Today", value: <Amount value={stats?.approvedAmount || 0} />, icon: CheckCircle2, tone: "success" },
-        { label: "Rejected Today", value: <Amount value={stats?.rejectedAmount || 0} />, icon: XCircle, tone: "danger" },
-        { label: "Total Claimed (Month)", value: <Amount value={totalClaimed} />, icon: BarChart3 },
+        { label: "Approved Today", value: <Amount value={stats?.approvedTodayAmount || 0} />, icon: CheckCircle2, tone: "success" },
+        { label: "Rejected Today", value: <Amount value={stats?.rejectedTodayAmount || 0} />, icon: XCircle, tone: "danger" },
+        { label: "Total Claimed (Month)", value: <Amount value={stats?.claimedMonthAmount || 0} />, icon: BarChart3 },
       ]}
     />
   );

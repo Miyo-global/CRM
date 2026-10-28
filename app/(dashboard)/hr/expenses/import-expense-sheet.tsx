@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ImportValidationPreview } from "@/features/hr/expenses/import-validation-preview";
 import { getErrorMessage } from "@/lib/get-error-message";
+import { EXPENSE_CATEGORIES, PAYMENT_METHODS } from "@/lib/hr/expense-taxonomy";
 import {
   IMPORT_ALLOWED_EXTENSIONS,
   IMPORT_ALLOWED_MIME_TYPES,
@@ -22,10 +23,7 @@ const TEMPLATE_COLUMNS = [
   "category", "amount", "description", "merchant", "payment_method", "expense_date",
 ] as const;
 
-const ALLOWED_CATEGORIES = [
-  "Travel", "Food", "Office Supplies", "Software", "Hardware", "Marketing",
-  "Entertainment", "Utilities", "Rent", "Insurance", "Salary", "Miscellaneous", "Other",
-];
+const ALLOWED_CATEGORIES = EXPENSE_CATEGORIES;
 
 interface ParsedRow {
   rowNumber: number;
@@ -49,7 +47,7 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
   const [file, setFile] = useState<File | null>(null);
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
   const [categoryMapping, setCategoryMapping] = useState<Record<string, string>>({});
-  const [autoApprove, setAutoApprove] = useState(true);
+  const [autoApprove, setAutoApprove] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [importResult, setImportResult] = useState<{
@@ -62,7 +60,7 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
     setFile(null);
     setParsedRows([]);
     setCategoryMapping({});
-    setAutoApprove(true);
+    setAutoApprove(false);
     setImportResult(null);
     setIsImporting(false);
     setIsParsing(false);
@@ -301,7 +299,7 @@ export function ImportExpenseSheet({ open, onOpenChange, onSuccess }: ImportExpe
                   <p><span className="font-medium text-foreground">amount</span> — Positive number</p>
                   <p><span className="font-medium text-foreground">description</span> — Text (optional)</p>
                   <p><span className="font-medium text-foreground">merchant</span> — Vendor name (optional)</p>
-                  <p><span className="font-medium text-foreground">payment_method</span> — Cash, UPI, Company Card, etc. (optional)</p>
+                  <p><span className="font-medium text-foreground">payment_method</span> — {PAYMENT_METHODS.join(", ")} (optional)</p>
                   <p><span className="font-medium text-foreground">expense_date</span> — YYYY-MM-DD format</p>
                 </div>
               </details>

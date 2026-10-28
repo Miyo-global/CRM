@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
 import { getTodayString } from "@/lib/date-utils";
 
@@ -17,6 +18,8 @@ interface ExportEntity {
   description: string;
   exportEndpoint: string;
   color: string;
+  /** Saved-file prefix when the endpoint's own name doesn't match the card. */
+  fileName?: string;
 }
 
 const ENTITIES: ExportEntity[] = [
@@ -27,6 +30,8 @@ const ENTITIES: ExportEntity[] = [
     description: "Export the employee directory with designation, department, role and status (Excel).",
     exportEndpoint: "/reports/headcount?format=xlsx",
     color: "text-plum-strong",
+    // The shared report endpoint names it headcount-*.xlsx.
+    fileName: "employees",
   },
   {
     id: "payroll",
@@ -64,6 +69,8 @@ export default function DataHubPage() {
 
 function DataHubContent() {
   const [exportingIds, setExportingIds] = useState<Set<string>>(new Set());
+  // Every card dumps personal or salary data, so each download is confirmed.
+  const [confirmEntity, setConfirmEntity] = useState<ExportEntity | null>(null);
 
   const handleExport = useCallback(async (entity: ExportEntity) => {
     setExportingIds(prev => new Set([...prev, entity.id]));
@@ -81,7 +88,10 @@ function DataHubContent() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = named ?? `${entity.id}-export-${getTodayString()}.csv`;
+      const ext = named?.split(".").pop() ?? "csv";
+      a.download = entity.fileName
+        ? `${entity.fileName}-${getTodayString()}.${ext}`
+        : named ?? `${entity.id}-export-${getTodayString()}.csv`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success(`${entity.label} export downloaded`);
@@ -129,7 +139,7 @@ function DataHubContent() {
                   variant="outline"
                   size="sm"
                   className="w-full"
-                  onClick={() => handleExport(entity)}
+                  onClick={() => setConfirmEntity(entity)}
                   disabled={isExporting}
                   loading={isExporting}
                 >
@@ -141,6 +151,19 @@ function DataHubContent() {
           );
         })}
       </div>
+      <ConfirmDialog
+        open={confirmEntity !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmEntity(null);
+        }}
+        title={`Export ${confirmEntity?.label.toLowerCase() ?? ""}?`}
+        description={`${confirmEntity?.description ?? ""} The file holds employee data; store and share it accordingly.`}
+        confirmLabel="Export"
+        onConfirm={() => {
+          if (confirmEntity) void handleExport(confirmEntity);
+          setConfirmEntity(null);
+        }}
+      />
     </PageWrapper>
   );
 }

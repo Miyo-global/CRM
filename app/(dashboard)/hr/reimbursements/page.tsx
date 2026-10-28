@@ -23,6 +23,7 @@ import { Plus, CheckCircle2, XCircle, IndianRupee } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { isAdminOrOwner } from "@/lib/constants/roles";
+import { canDecideRequest } from "@/lib/auth/separation-of-duties";
 import { formatINRWhole } from "@/lib/format-utils";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,6 +41,8 @@ export default function ReimbursementsPage() {
   const create = useCreateReimbursement();
   const process = useProcessReimbursement();
   const isAdmin = isAdminOrOwner(session?.user?.role);
+  // Employees see only their own requests, as the sidebar's "My Reimbursements" says.
+  const pageTitle = isAdmin ? "Reimbursements" : "My reimbursements";
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [rejectId, setRejectId] = useState<number | null>(null);
@@ -103,7 +106,7 @@ export default function ReimbursementsPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Reimbursements">
+      <PageWrapper title={pageTitle}>
         <Skeleton className="h-80 rounded-lg" />
       </PageWrapper>
     );
@@ -111,8 +114,8 @@ export default function ReimbursementsPage() {
 
   return (
     <PageWrapper
-      title="Reimbursements"
-      badge={`${items?.length ?? 0} requests`}
+      title={pageTitle}
+      badge={`${items?.length ?? 0} ${items?.length === 1 ? "request" : "requests"}`}
       actions={<Button size="sm" onClick={() => setSheetOpen(true)}><Plus className="size-4" aria-hidden="true" />New request</Button>}
     >
       {isError ? (
@@ -144,7 +147,7 @@ export default function ReimbursementsPage() {
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{r.category}</p>
                         <p className="max-w-64 truncate text-xs text-muted-foreground" title={r.description ?? undefined}>
-                          {[r.user?.name, r.description].filter(Boolean).join(" · ") || "—"}
+                          {[r.user?.name, r.user?.employeeId, r.description].filter(Boolean).join(" · ") || "—"}
                         </p>
                       </div>
                     </div>
@@ -158,7 +161,11 @@ export default function ReimbursementsPage() {
                   </TableCell>
                   {isAdmin && (
                     <TableCell className="text-right">
-                      {r.status === "PENDING" ? (
+                      {/* Same rule as the API and Loans: no deciding your own request (QA-AUTH-04). */}
+                      {!canDecideRequest(
+                        { id: session?.user?.id, role: session?.user?.role },
+                        { id: r.userId, role: r.user?.role },
+                      ).allowed ? null : r.status === "PENDING" ? (
                         <div className="flex justify-end gap-1.5">
                           <Button size="sm" onClick={() => setApproveId(r.id)} disabled={process.isPending}>
                             <CheckCircle2 className="size-4" aria-hidden="true" />Approve

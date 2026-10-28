@@ -18,6 +18,7 @@ import { isAdminOrOwner } from "@/lib/auth/helpers";
 import type { NextRequest } from "next/server";
 import { likePattern } from "@/lib/db/escape-like";
 import { EXPENSE_APPROVER, EXPENSE_USER } from "@/lib/db/expense-user-columns";
+import { expenseKpiWindows } from "@/lib/hr/expense-kpi";
 
 export const dynamic = "force-dynamic";
 
@@ -119,6 +120,7 @@ export async function GET(req: NextRequest) {
     const sortColumn = (sortColumns as Record<string, (typeof sortColumns)[keyof typeof sortColumns]>)[sortBy] ?? expenses.expenseDate;
 
     const orderFn = sortOrder === "asc" ? asc : desc;
+    const kpi = expenseKpiWindows();
 
     const [expenseList, countResult, statsResult, pendingList, categoryList] = await Promise.all([
       db.query.expenses.findMany({
@@ -145,6 +147,11 @@ export async function GET(req: NextRequest) {
           approvedCount: sql<number>`COUNT(CASE WHEN ${expenses.status} = 'APPROVED' THEN 1 END)`,
           rejectedCount: sql<number>`COUNT(CASE WHEN ${expenses.status} = 'REJECTED' THEN 1 END)`,
           paidCount: sql<number>`COUNT(CASE WHEN ${expenses.status} = 'PAID' THEN 1 END)`,
+          // KPI tiles: decided today (IST) and claimed this month, rejected
+          // excluded. A rejection is terminal, so updated_at is when it happened.
+          approvedTodayAmount: sql<number>`COALESCE(SUM(CASE WHEN ${expenses.status} IN ('APPROVED', 'PAID') AND ${expenses.approvedAt} >= ${kpi.dayStart} AND ${expenses.approvedAt} < ${kpi.dayEnd} THEN CAST(${expenses.amount} AS DECIMAL) ELSE 0 END), 0)`,
+          rejectedTodayAmount: sql<number>`COALESCE(SUM(CASE WHEN ${expenses.status} = 'REJECTED' AND ${expenses.updatedAt} >= ${kpi.dayStart} AND ${expenses.updatedAt} < ${kpi.dayEnd} THEN CAST(${expenses.amount} AS DECIMAL) ELSE 0 END), 0)`,
+          claimedMonthAmount: sql<number>`COALESCE(SUM(CASE WHEN ${expenses.status} <> 'REJECTED' AND ${expenses.expenseDate} >= ${kpi.monthStart} AND ${expenses.expenseDate} < ${kpi.nextMonthStart} THEN CAST(${expenses.amount} AS DECIMAL) ELSE 0 END), 0)`,
         })
         .from(expenses)
         .where(and(...baseConditions)),
@@ -180,6 +187,9 @@ export async function GET(req: NextRequest) {
         rejectedCount: Number(s?.rejectedCount) || 0,
         paidCount: Number(s?.paidCount) || 0,
         avgExpenseAmount: s?.totalCount ? Number(s.totalAmount) / Number(s.totalCount) : 0,
+        approvedTodayAmount: Number(s?.approvedTodayAmount) || 0,
+        rejectedTodayAmount: Number(s?.rejectedTodayAmount) || 0,
+        claimedMonthAmount: Number(s?.claimedMonthAmount) || 0,
       },
       categories: categoryList,
       pagination: {

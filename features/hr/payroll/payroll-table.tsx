@@ -225,6 +225,7 @@ export function PayrollTable({
                   <TableHeader>
                     <TableRow>
                       <TableHead className="z-sticky bg-card pl-4 md:sticky md:left-0">Employee</TableHead>
+                      <TableHead hideBelow="md">Emp ID</TableHead>
                       <TableHead hideBelow="md" className="text-right">Gross</TableHead>
                       <TableHead hideBelow="md" className="text-right">LOP days</TableHead>
                       <TableHead hideBelow="md" className="text-right">PT</TableHead>
@@ -249,6 +250,9 @@ export function PayrollTable({
                               {payroll.user?.designation}
                             </p>
                           </div>
+                        </TableCell>
+                        <TableCell hideBelow="md" className="whitespace-nowrap font-mono text-xs text-muted-foreground">
+                          {payroll.user?.employeeId || "—"}
                         </TableCell>
                         <TableCell hideBelow="md" className="whitespace-nowrap text-right font-mono">
                           ₹{fmtInr(payroll.grossSalary)}

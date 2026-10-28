@@ -59,16 +59,7 @@ export const STATUS_LABELS: Record<string, string> = {
   PAID: "Paid",
 };
 
-export const EXPENSE_CATEGORIES = [
-  "Travel", "Meals", "Office Supplies", "Software",
-  "Equipment", "Training", "Marketing", "Utilities", "Other",
-];
-
-export const PAYMENT_METHODS = [
-  "Cash", "Company Card", "Personal Card", "Bank Transfer", "UPI",
-  "Online", "Offline", "Cheque", "NEFT", "IMPS",
-  "Debit Card", "Credit Card", "Wallet", "Demand Draft", "Other",
-];
+export { EXPENSE_CATEGORIES, PAYMENT_METHODS } from "@/lib/hr/expense-taxonomy";
 
 export type StatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED" | "PAID";
 

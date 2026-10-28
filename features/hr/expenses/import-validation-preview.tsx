@@ -13,11 +13,9 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CURRENCY_SYMBOL, DEFAULT_LOCALE } from "@/lib/constants/locale";
+import { EXPENSE_CATEGORIES } from "@/lib/hr/expense-taxonomy";
 
-const ALLOWED_CATEGORIES = [
-  "Travel", "Food", "Office Supplies", "Software", "Hardware", "Marketing",
-  "Entertainment", "Utilities", "Rent", "Insurance", "Salary", "Miscellaneous", "Other",
-];
+const ALLOWED_CATEGORIES = EXPENSE_CATEGORIES;
 
 interface ParsedRow {
   rowNumber: number;
