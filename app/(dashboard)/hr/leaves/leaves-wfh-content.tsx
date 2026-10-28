@@ -167,7 +167,7 @@ export function LeavesWfhContent() {
                 <div className="flex flex-wrap gap-3">
                   {approvedLeavesThisWeek.map((leave) => (
                     <div
-                      key={leave.id}
+                      key={`${leave.kind ?? "LEAVE"}-${leave.id}`}
                       className="flex items-center gap-2 rounded-lg border border-border bg-surface-sunken px-3 py-2"
                     >
                       <Avatar className="h-7 w-7">
@@ -183,7 +183,9 @@ export function LeavesWfhContent() {
                         </p>
                         <p className="text-2xs tabular-nums text-muted-foreground">
                           {formatCalendarRange(leave.startDate, leave.endDate)}
-                          {leave.leaveType && (
+                          {leave.kind === "WFH" ? (
+                            <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-2xs">WFH</Badge>
+                          ) : leave.leaveType && (
                             <span className="ml-1 text-warning-strong">
                               · {leave.leaveType.name}
                             </span>

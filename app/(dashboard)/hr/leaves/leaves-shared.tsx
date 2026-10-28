@@ -106,6 +106,8 @@ export interface ApprovedLeave {
     image: string | null;
   } | null;
   leaveType: { name: string } | null;
+  /** WFH rows share the id space with nothing; key on kind + id. */
+  kind?: "LEAVE" | "WFH";
 }
 
 export interface WfhRequest {
