@@ -97,6 +97,8 @@ const nextConfig: NextConfig = {
       { source: "/hr/policies", destination: "/hr/leaves/policies", permanent: false },
       { source: "/settings/leave", destination: "/hr/leaves/policies", permanent: false },
       { source: "/settings/leave-policies", destination: "/hr/leaves/policies", permanent: false },
+      // Bare /tickets is the support inbox; /tickets/<key> stays the ticket page.
+      { source: "/tickets", destination: "/support/inbox", permanent: false },
       // --- end QA cluster C ---
     ];
   },
