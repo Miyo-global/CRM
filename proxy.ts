@@ -10,6 +10,7 @@ import { redis } from "@/lib/redis";
 import { canAccessRoute, isDisabledModuleRoute, isOwnEmployeeRecord } from "@/lib/auth/route-access";
 import { isSignupEnabled } from "@/lib/auth/signup-enabled";
 import { buildCsp } from "@/lib/security/csp";
+import { errorCode } from "@/lib/api/error-code";
 
 function isLoopbackHostname(hostname: string): boolean {
   const h = hostname.toLowerCase();
@@ -90,7 +91,7 @@ export default async function proxy(req: NextRequest) {
     if (!result.allowed) {
       logger.warn("Rate limit exceeded", { ip, path: pathname, tier, retryAfterSecs: result.retryAfterSecs });
       return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
+        { error: "Too many requests. Please try again later.", code: errorCode(429) },
         {
           status: 429,
           headers: {
@@ -110,7 +111,7 @@ export default async function proxy(req: NextRequest) {
         userAgent: ua?.slice(0, 200),
       });
       return NextResponse.json(
-        { error: "Forbidden" },
+        { error: "Forbidden", code: errorCode(403) },
         { status: 403 },
       );
     }
@@ -129,7 +130,7 @@ export default async function proxy(req: NextRequest) {
   // The ATS ships off: its pages and APIs are not reachable at all.
   if (isDisabledModuleRoute(pathname)) {
     if (pathname.startsWith("/api/")) {
-      return NextResponse.json({ error: "Not found." }, { status: 404 });
+      return NextResponse.json({ error: "Not found.", code: errorCode(404) }, { status: 404 });
     }
     const url = req.nextUrl.clone();
     url.pathname = "/access-restricted";

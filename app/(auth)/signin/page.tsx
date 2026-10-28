@@ -90,9 +90,8 @@ export default function SignInPage() {
         window.location.href = target;
       }
     },
-    onError: (error) => {
-      toast.error(getErrorMessage(error));
-    },
+    // No toast: the inline alert below already shows the error, and a toast
+    // per attempt stacked up on repeated failures (QA P3 signin-error-alert).
   });
 
   const googleSignInMutation = useMutation({

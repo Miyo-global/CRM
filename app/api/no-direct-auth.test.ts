@@ -33,6 +33,7 @@ describe("API routes", () => {
       "app/api/push/vapid-public-key/route.ts", // public key only
       "app/api/hr/integrations/biometric/route.ts", // device API key
       "app/api/integrations/google/callback/route.ts", // OAuth state
+      "app/api/[...notFound]/route.ts", // JSON 404 for unknown paths, no data
     ]);
     const files = execSync("find app/api -name 'route.ts'", { encoding: "utf-8" })
       .split("\n")

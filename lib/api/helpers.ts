@@ -16,6 +16,7 @@ import type { Session } from "next-auth";
 import { NextResponse, type NextRequest } from "next/server";
 import { z, type ZodSchema } from "zod";
 import { formatZodError } from "./zod-message";
+import { errorCode } from "./error-code";
 
 export type AuthSession = Omit<Session, "orgId"> & {
   user: NonNullable<Session["user"]>;
@@ -43,7 +44,7 @@ export function ok<T>(data: T, status = 200) {
 }
 
 export function err(message: string, status = 400): NextResponse<never> {
-  return NextResponse.json({ error: message }, { status }) as NextResponse<never>;
+  return NextResponse.json({ error: message, code: errorCode(status) }, { status }) as NextResponse<never>;
 }
 
 
@@ -71,7 +72,7 @@ export function serverError(
   }
   const errorId = crypto.randomUUID().slice(0, 8);
   logger.error(`${ctx.route} failed`, { errorId, ...ctx, error: error instanceof Error ? { message: error.message, stack: error.stack } : error });
-  return NextResponse.json({ error: message, errorId }, { status: 500 }) as NextResponse<never>;
+  return NextResponse.json({ error: message, code: errorCode(500), errorId }, { status: 500 }) as NextResponse<never>;
 }
 
 /**
@@ -118,7 +119,7 @@ export async function withAuth<T>(
   const session = (await auth()) as Session | null;
   lap("auth");
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" } as T, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized", code: errorCode(401) } as T, { status: 401 });
   }
 
   let orgId: string | null | undefined = session.orgId;
@@ -127,15 +128,15 @@ export async function withAuth<T>(
   // R2-LC-17 / R3-SA-01: Portal Access OFF ends API access too, not only
   // page loads (the jwt callback refreshes both flags from the database).
   if (session.user.isActive === false || isPortalAccessBlocked(session.user.role, session.user.hasDashboardAccess)) {
-    return NextResponse.json({ error: "Account deactivated" } as T, { status: 403 });
+    return NextResponse.json({ error: "Account deactivated", code: errorCode(403) } as T, { status: 403 });
   }
 
   const revocation = await sessionRevocationState(session);
   if (revocation === "revoked") {
-    return NextResponse.json({ error: "Session revoked" } as T, { status: 401 });
+    return NextResponse.json({ error: "Session revoked", code: errorCode(401) } as T, { status: 401 });
   }
   if (revocation === "unavailable") {
-    return NextResponse.json({ error: "Session verification unavailable" } as T, { status: 503 });
+    return NextResponse.json({ error: "Session verification unavailable", code: errorCode(503) } as T, { status: 503 });
   }
 
   if (redis) {
@@ -144,7 +145,7 @@ export async function withAuth<T>(
       if (cached !== null) {
 
         if (cached.isActive === false) {
-          return NextResponse.json({ error: "Account deactivated" } as T, { status: 403 });
+          return NextResponse.json({ error: "Account deactivated", code: errorCode(403) } as T, { status: 403 });
         }
 
         session.user.role = (cached.role ?? session.user.role) as typeof session.user.role;
@@ -172,12 +173,12 @@ export async function withAuth<T>(
       orgId = member?.orgId ?? null;
     } catch (e) {
       logger.error("withAuth: organization membership lookup failed", { userId: session.user.id, error: e });
-      return NextResponse.json({ error: "Failed to resolve organization" } as T, { status: 500 });
+      return NextResponse.json({ error: "Failed to resolve organization", code: errorCode(500) } as T, { status: 500 });
     }
   }
 
   if (!orgId) {
-    return NextResponse.json({ error: "Organization not found" } as T, { status: 403 });
+    return NextResponse.json({ error: "Organization not found", code: errorCode(403) } as T, { status: 403 });
   }
 
   lap("membership");
@@ -224,7 +225,7 @@ export async function withAdmin<T>(
   return withAuth(async (session) => {
     const role = session.user.role;
     if (!isAdminOrOwner(role)) {
-      return NextResponse.json({ error: "Forbidden" } as T, { status: 403 });
+      return NextResponse.json({ error: "Forbidden", code: errorCode(403) } as T, { status: 403 });
     }
     return handler(session);
   }, req);
@@ -238,7 +239,7 @@ export async function withHrEmailTemplateAccess<T>(
   return withAuth(async (session) => {
     const role = session.user.role;
     if (!role || !HR_EMAIL_TEMPLATE_ROLES.has(role)) {
-      return NextResponse.json({ error: "Forbidden" } as T, { status: 403 });
+      return NextResponse.json({ error: "Forbidden", code: errorCode(403) } as T, { status: 403 });
     }
     return handler(session);
   });
@@ -280,7 +281,7 @@ export function withRoles<T>(allowed: readonly string[]) {
     return withAuth(async (session) => {
       const role = session.user.role as string | undefined;
       if (!role || !(allowed as string[]).includes(role)) {
-        return NextResponse.json({ error: "Forbidden" } as T, { status: 403 });
+        return NextResponse.json({ error: "Forbidden", code: errorCode(403) } as T, { status: 403 });
       }
       return handler(session);
     }, req);

@@ -23,6 +23,7 @@ import { PASSWORD_ZOD_SCHEMA, passwordChecks, passwordIdentityIssue } from "@/li
 import { cn } from "@/lib/utils";
 import { toneBar } from "@/lib/design/tones";
 import { apiClient } from "@/lib/api-client";
+import Link from "next/link";
 
 function Loader2({ className }: { className?: string }) {
   return (
@@ -74,7 +75,7 @@ function getPasswordStrength(password: string): {
 }
 
 function ResetPasswordContent() {
-  const { update, data: session } = useSession();
+  const { update, data: session, status } = useSession();
   const router = useRouter();
   const token = useUrlToken();
   const [loading, setLoading] = useState(false);
@@ -126,6 +127,32 @@ function ResetPasswordContent() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // No token is only valid for a signed-in forced change; anyone else has a
+  // broken link and gets a way forward instead of a form that cannot work.
+  if (!token && status === "loading") {
+    return (
+      <div role="status" className="w-full max-w-[400px] text-center">
+        <Loader2 className="mx-auto size-8 animate-spin text-brand-text" />
+      </div>
+    );
+  }
+  if (!token && status !== "authenticated") {
+    return (
+      <div className="flex w-full max-w-[400px] flex-col items-center text-center">
+        <h1 className="mb-2 font-display text-4xl font-extrabold tracking-tight text-foreground">Invalid Link</h1>
+        <p className="mb-6 text-base text-muted-foreground">
+          This password reset link is missing or invalid. Request a new link to reset your password.
+        </p>
+        <Button asChild size="lg" className="w-full">
+          <Link href="/forgot-password">Request a new link</Link>
+        </Button>
+        <Link href="/signin" className="mt-4 inline-flex items-center gap-1 rounded-sm text-sm font-medium text-brand-text outline-none hover:underline focus-visible:focus-ring">
+          Back to Sign In
+        </Link>
+      </div>
+    );
   }
 
   return (

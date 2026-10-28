@@ -6,6 +6,7 @@ import { eq, and } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { checkRoleAssignment } from "@/lib/auth/role-assignment";
 import { createAuditLog } from "@/lib/audit-log";
+import { invalidateUserSession } from "@/lib/auth";
 import { z } from "zod";
 
 const updateRoleSchema = z.object({
@@ -63,6 +64,9 @@ export async function POST(
           )
         );
     });
+
+    // Drop the cached session so the user's next request reads the new role.
+    await invalidateUserSession(userId);
 
     void createAuditLog({
       action: "role.changed",
