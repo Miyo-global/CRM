@@ -11,6 +11,8 @@ export interface Employee {
   isActive: boolean;
   hasDashboardAccess: boolean;
   department: { id: number; name: string } | null;
+  /** Completed termination effective later; the account is still open. */
+  scheduledTerminationDate?: string | null;
 }
 
 export type UserRole = string;

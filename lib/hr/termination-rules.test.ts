@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { blocksNewTermination, terminationDateError, terminationEmailNotice } from "./termination-rules";
+import {
+  blocksNewTermination,
+  terminationCompletedMessage,
+  terminationDateError,
+  terminationEmailNotice,
+} from "./termination-rules";
 import { fnfHasFigures, fnfTotals } from "./fnf-figures";
 vi.mock("@/lib/db", () => ({ db: {} }));
 import { diffFields } from "@/lib/audit-log";
@@ -111,6 +116,19 @@ describe("terminationEmailNotice (FR1-036)", () => {
   it("keeps the plain wording when the effective date has come", () => {
     expect(terminationEmailNotice(null, "2026-10-26", "2026-10-26")).toMatch(
       /^Send termination email to this employee\?.*mark the termination as Complete\.$/,
+    );
+  });
+});
+
+describe("terminationCompletedMessage", () => {
+  it("says a future-dated employee stays active", () => {
+    const text = terminationCompletedMessage({ deactivated: false, effectiveDate: "2026-11-30" });
+    expect(text).toContain("stays active until 30 Nov 2026");
+    expect(text).not.toContain("deactivated");
+  });
+  it("says deactivated when the account closed now", () => {
+    expect(terminationCompletedMessage({ deactivated: true, effectiveDate: "2026-10-01" })).toContain(
+      "Employee deactivated",
     );
   });
 });

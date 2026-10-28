@@ -2,7 +2,8 @@
 
 import { db } from "@/lib/db";
 import { departmentKey } from "@/lib/hr/department-count";
-import { departments, organizationMembers, users, leaveRequests, attendance } from "@/lib/db/schema";
+import { departments, organizationMembers, users, leaveRequests, attendance, terminations } from "@/lib/db/schema";
+import { getTodayString } from "@/lib/date-utils";
 import { timesheets, projectMembers, projects, tickets, sprints } from "@/lib/db/schema/projects";
 import { eq, and, desc, gte, lte, ilike, or, count, isNull, sql } from "drizzle-orm";
 
@@ -159,6 +160,8 @@ export async function getEmployeesPaginated(
         hasDashboardAccess: users.hasDashboardAccess,
         reportingTo: users.reportingTo,
         monthlySalary: users.monthlySalary,
+        // R3-SA-09: completed but not yet effective, so still Active today.
+        scheduledTerminationDate: sql<string | null>`(SELECT max(${terminations.effectiveDate})::text FROM ${terminations} WHERE ${terminations.userId} = ${users.id} AND ${terminations.orgId} = ${orgId} AND ${terminations.status} = 'COMPLETED' AND ${terminations.effectiveDate} >= ${getTodayString()})`,
       })
       .from(organizationMembers)
       .innerJoin(users, eq(organizationMembers.userId, users.id))

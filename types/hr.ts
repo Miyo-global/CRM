@@ -53,6 +53,8 @@ export interface Employee {
   websiteUrl: string | null;
   skills: string[] | null;
   phone: string | null;
+  /** Completed termination still ahead (list query only). */
+  scheduledTerminationDate?: string | null;
 }
 
 export interface PaginatedEmployees {

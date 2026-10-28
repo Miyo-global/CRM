@@ -141,7 +141,22 @@ export function terminationEmailNotice(
   const who = employeeName?.trim() || "this employee";
   const base = `Send termination email to ${who}? The employee will be officially notified now.`;
   if (effectiveDate && effectiveDate > today) {
-    return `${base} They stay active until the effective date, ${formatCalendarDate(effectiveDate)}; their account closes when you mark the termination Complete.`;
+    return `${base} They stay active until the effective date, ${formatCalendarDate(effectiveDate)}; their account closes the day after that date, once the termination is marked Complete.`;
   }
   return `${base} Account deactivation will happen when you mark the termination as Complete.`;
+}
+
+/**
+ * Toast after "Complete termination". A future effective date keeps the
+ * account open until the day after it (R3-SA-09), so say that instead of
+ * claiming the employee was deactivated.
+ */
+export function terminationCompletedMessage(res: {
+  deactivated?: boolean;
+  effectiveDate?: string | null;
+}): string {
+  if (res.deactivated === false && res.effectiveDate) {
+    return `Termination completed. FnF and asset return initiated. The employee stays active until ${formatCalendarDate(res.effectiveDate.slice(0, 10))}; their account closes the day after.`;
+  }
+  return "Termination completed. Employee deactivated, FnF and asset return initiated.";
 }
