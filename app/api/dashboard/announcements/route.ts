@@ -28,10 +28,11 @@ function isAnnouncementAdmin(role: string | undefined) {
   return role === "CEO" || role === "HR" || role === "ADMIN";
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   return withAuth(async (session) => {
     try {
-      const data = await getActiveAnnouncements(session.orgId);
+      const expired = req.nextUrl.searchParams.get("expired") === "true";
+      const data = await getActiveAnnouncements(session.orgId, { expired });
       return ok(data);
     } catch (error) {
       logger.error("Failed to load announcements", error);

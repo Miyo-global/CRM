@@ -336,7 +336,8 @@ export async function getTodayActivities(orgId: string) {
   return activities.map((a) => ({ type: a.type, subject: a.message }));
 }
 
-export async function getActiveAnnouncements(orgId: string) {
+/** Live announcements; `expired: true` lists past ones (expiry reached), newest first, for the archive tab. */
+export async function getActiveAnnouncements(orgId: string, opts: { expired?: boolean } = {}) {
   const now = new Date();
   const rows = await db
     .select({
@@ -355,11 +356,13 @@ export async function getActiveAnnouncements(orgId: string) {
     .where(
       and(
         eq(announcements.orgId, orgId),
-        or(isNull(announcements.expiresAt), gt(announcements.expiresAt, now))
+        opts.expired
+          ? lte(announcements.expiresAt, now)
+          : or(isNull(announcements.expiresAt), gt(announcements.expiresAt, now))
       )
     )
-    .orderBy(desc(announcements.isPinned), desc(announcements.createdAt))
-    .limit(20);
+    .orderBy(...(opts.expired ? [] : [desc(announcements.isPinned)]), desc(announcements.createdAt))
+    .limit(opts.expired ? 100 : 20);
   return rows;
 }
 
