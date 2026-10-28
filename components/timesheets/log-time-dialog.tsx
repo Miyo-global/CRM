@@ -251,6 +251,14 @@ export function LogTimeDialog({ trigger, defaultOpen = false }: LogTimeDialogPro
                           )}
                         </SelectContent>
                       </Select>
+                      {/* QA P3-timesheet-log-blocked-without-ticket-no-hint */}
+                      {!selectedProjectId ? (
+                        <p className="text-xs text-muted-foreground">Pick a project first. Time is logged on a ticket.</p>
+                      ) : !isLoadingTickets && !projectDetails?.tickets?.length ? (
+                        <p className="text-xs text-muted-foreground">
+                          This project has no tickets yet. Create a ticket in the project first, then log time on it.
+                        </p>
+                      ) : null}
                       <FormMessage />
                     </FormItem>
                   )}
