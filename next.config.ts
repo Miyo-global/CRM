@@ -46,6 +46,13 @@ const nextConfig: NextConfig = {
       // QA-AUTH-07: the QR code manager moved off the CEO-named path.
       { source: "/ceo/qr-code", destination: "/tools/qr-code", permanent: true },
       { source: "/build/:path*", destination: "/projects/:path*", permanent: false },
+      // --- QA cluster C (routes-nav-aliases): guessed or old URLs -> canonical pages.
+      // Each destination is a real app route (checked in route-links.test.ts).
+      // Spaces and templates live under /knowledge/wiki (P2-knowledge-spaces-templates-404).
+      { source: "/knowledge/spaces", destination: "/knowledge/wiki/spaces", permanent: false },
+      { source: "/knowledge/spaces/:spaceId", destination: "/knowledge/wiki/spaces/:spaceId", permanent: false },
+      { source: "/knowledge/templates", destination: "/knowledge/wiki/templates", permanent: false },
+      // --- end QA cluster C ---
     ];
   },
   experimental: {
