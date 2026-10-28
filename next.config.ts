@@ -105,6 +105,10 @@ const nextConfig: NextConfig = {
       { source: "/hr/permissions", destination: "/settings/permissions", permanent: false },
       { source: "/settings/offer-letter-templates", destination: "/hr/offer-letter-templates", permanent: false },
       { source: "/settings/offer-letters", destination: "/hr/offer-letter-templates", permanent: false },
+      // Payslips are /hr/my-payslips (FIX-QUEUE blank pages).
+      { source: "/hr/payslips", destination: "/hr/my-payslips", permanent: false },
+      { source: "/payslips", destination: "/hr/my-payslips", permanent: false },
+      { source: "/profile/payslips", destination: "/hr/my-payslips", permanent: false },
       // --- end QA cluster C ---
     ];
   },
