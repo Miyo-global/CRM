@@ -52,6 +52,9 @@ const nextConfig: NextConfig = {
       { source: "/knowledge/spaces", destination: "/knowledge/wiki/spaces", permanent: false },
       { source: "/knowledge/spaces/:spaceId", destination: "/knowledge/wiki/spaces/:spaceId", permanent: false },
       { source: "/knowledge/templates", destination: "/knowledge/wiki/templates", permanent: false },
+      // Data export lives at /settings/data-hub (P3-data-hub-route-404).
+      { source: "/hr/data-hub", destination: "/settings/data-hub", permanent: false },
+      { source: "/data-hub", destination: "/settings/data-hub", permanent: false },
       // --- end QA cluster C ---
     ];
   },
