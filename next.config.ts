@@ -57,6 +57,8 @@ const nextConfig: NextConfig = {
       { source: "/data-hub", destination: "/settings/data-hub", permanent: false },
       // The sidebar calls it Data Export (P3-settings-data-export-route-404).
       { source: "/settings/data-export", destination: "/settings/data-hub", permanent: false },
+      // QR codes are a tool, not a settings page.
+      { source: "/settings/qr-codes", destination: "/tools/qr-code", permanent: false },
       // --- end QA cluster C ---
     ];
   },
