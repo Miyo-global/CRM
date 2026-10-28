@@ -66,6 +66,8 @@ const nextConfig: NextConfig = {
       { source: "/health", destination: "/dashboard/admin-health", permanent: false },
       // Analytics is HR Analytics; reports are at /reports.
       { source: "/analytics", destination: "/hr/analytics", permanent: false },
+      { source: "/audit", destination: "/settings/audit-log", permanent: false },
+      { source: "/settings/audit", destination: "/settings/audit-log", permanent: false },
       // --- end QA cluster C ---
     ];
   },
