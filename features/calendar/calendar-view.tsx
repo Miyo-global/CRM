@@ -20,6 +20,7 @@ import {
   endOfYear,
   startOfDay,
   endOfDay,
+  addHours,
 } from "date-fns";
 import { isDateOnly, parseCalendarDate } from "@/lib/date-utils";
 import { Button } from "@/components/ui/button";
@@ -190,9 +191,17 @@ export function CalendarView() {
   }, []);
 
   const handleOpenCreate = useCallback(() => {
-    setCreateSlot(null);
+    // In Day view the toolbar button adds to the day on screen, at the current time.
+    if (view === "day") {
+      const now = new Date();
+      const start = new Date(currentDate);
+      start.setHours(now.getHours(), now.getMinutes(), 0, 0);
+      setCreateSlot({ start, end: addHours(start, 1) });
+    } else {
+      setCreateSlot(null);
+    }
     setIsCreateOpen(true);
-  }, []);
+  }, [view, currentDate]);
 
   const handleSelectEvent = useCallback((event: BigCalEvent) => {
     setSelectedEventId(String(event.id));
