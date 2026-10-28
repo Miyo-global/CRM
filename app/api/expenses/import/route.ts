@@ -12,14 +12,11 @@ import {
   validateFileTypeAndSize,
 } from "@/lib/files/expense-file-validation";
 import { getTodayString } from "@/lib/date-utils";
+import { EXPENSE_CATEGORIES } from "@/lib/hr/expense-taxonomy";
 
 const MAX_ROWS = 10_000;
 
-const ALLOWED_CATEGORIES = new Set([
-  "Travel", "Food", "Office Supplies", "Software", "Hardware",
-  "Marketing", "Entertainment", "Utilities", "Rent", "Insurance",
-  "Salary", "Miscellaneous", "Other",
-]);
+const ALLOWED_CATEGORIES = new Set(EXPENSE_CATEGORIES);
 
 /**
  * Strips spreadsheet-formula prefixes from an imported cell.
