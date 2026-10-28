@@ -103,6 +103,8 @@ const nextConfig: NextConfig = {
       { source: "/permission-matrix", destination: "/settings/permissions", permanent: false },
       { source: "/permissions", destination: "/settings/permissions", permanent: false },
       { source: "/hr/permissions", destination: "/settings/permissions", permanent: false },
+      { source: "/settings/offer-letter-templates", destination: "/hr/offer-letter-templates", permanent: false },
+      { source: "/settings/offer-letters", destination: "/hr/offer-letter-templates", permanent: false },
       // --- end QA cluster C ---
     ];
   },
