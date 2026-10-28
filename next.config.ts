@@ -64,6 +64,8 @@ const nextConfig: NextConfig = {
       // System health / admin summary lives under the dashboard.
       { source: "/settings/system-health", destination: "/dashboard/admin-health", permanent: false },
       { source: "/health", destination: "/dashboard/admin-health", permanent: false },
+      // Analytics is HR Analytics; reports are at /reports.
+      { source: "/analytics", destination: "/hr/analytics", permanent: false },
       // --- end QA cluster C ---
     ];
   },
