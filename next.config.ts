@@ -77,6 +77,7 @@ const nextConfig: NextConfig = {
       { source: "/hr/team-schedule", destination: "/hr/attendance", permanent: false },
       // New hires are created in the onboarding wizard.
       { source: "/hr/employees/new", destination: "/hr/onboarding", permanent: false },
+      { source: "/hr/find-expert", destination: "/hr/employees/find-expert", permanent: false },
       // --- end QA cluster C ---
     ];
   },
