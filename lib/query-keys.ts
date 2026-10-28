@@ -202,6 +202,10 @@ export const queryKeys = {
     targetTypes: () => [...base, "auditLog", "targetTypes"] as const,
   },
 
+  emailLog: {
+    list: (params?: Record<string, unknown>) => [...base, "emailLog", "list", ...(params ? [params] : [])] as const,
+  },
+
   sessions: {
     all: [...base, "sessions"] as const,
     list: () => [...base, "sessions", "list"] as const,

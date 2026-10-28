@@ -221,6 +221,7 @@ function roleNavGroups(role: string): NavGroup[] {
             { label: "Roles & Permissions", icon: Shield, href: "/settings/roles" },
             { label: "Permission Matrix", icon: ShieldAlert, href: "/settings/permissions", isSubItem: true },
             { label: "Audit Log", icon: ShieldCheck, href: "/settings/audit-log" },
+            { label: "Email Log", icon: MailOpen, href: "/settings/email-log", isSubItem: true },
             { label: "Webhooks", icon: Zap, href: "/settings/webhooks" },
             { label: "AI Settings", icon: Brain, href: "/settings/ai" },
             { label: "Notifications", icon: Bell, href: "/settings/notifications", isSubItem: true },
