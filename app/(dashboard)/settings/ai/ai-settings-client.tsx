@@ -16,6 +16,8 @@ import {
 } from "@/lib/api/hooks/ai";
 import { Bot, BarChart3, BrainCircuit, type LucideIcon } from "lucide-react";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 const FLAG_META: {
   key: keyof OrgFeatureFlags;
@@ -63,8 +65,20 @@ export function AiSettingsClient({ aiAvailable }: { aiAvailable: boolean }) {
   const { data: usage, isLoading: usageLoading } = useAiUsage();
   const updateFlag = useUpdateFeatureFlag();
 
+  // Each switch saves at once, org-wide; confirm it and offer a one-click undo
+  // so a stray click doesn't silently change AI for everyone.
   const handleToggle = (flag: keyof OrgFeatureFlags, enabled: boolean) => {
-    updateFlag.mutate({ flag, enabled });
+    const label = FLAG_META.find((m) => m.key === flag)?.label ?? "AI feature";
+    updateFlag.mutate(
+      { flag, enabled },
+      {
+        onSuccess: () =>
+          toast.success(`${label} turned ${enabled ? "on" : "off"}`, {
+            action: { label: "Undo", onClick: () => updateFlag.mutate({ flag, enabled: !enabled }) },
+          }),
+        onError: (e) => toast.error(getErrorMessage(e)),
+      },
+    );
   };
 
   return (
