@@ -106,10 +106,17 @@ function MembersSettingsContent() {
     [searchParams, router, pathname],
   );
 
+  // Active by default, like /hr; terminated people sit behind the filter.
+  const memberStatus = searchParams.get("status") || "active";
   const { data: membersData, isLoading: membersLoading } = useOrgMembers(
     page,
     20,
-    apiSearch || undefined
+    apiSearch || undefined,
+    { status: memberStatus === "inactive" ? "inactive" : memberStatus === "all" ? undefined : "active" },
+  );
+  const handleStatusChange = useCallback(
+    (value: string) => updateParams({ status: value === "active" ? null : value, page: null }),
+    [updateParams],
   );
   const { data: invitations } = useInvitations();
   const inviteUser = useInviteUser();
@@ -321,6 +328,17 @@ function MembersSettingsContent() {
                       {membersData && <span className={countPill}>{membersData.pagination.total}</span>}
                     </CardTitle>
                   </div>
+                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-start">
+                  <Select value={memberStatus} onValueChange={handleStatusChange}>
+                    <SelectTrigger className="w-full sm:w-36" aria-label="Member status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Terminated</SelectItem>
+                      <SelectItem value="all">All</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <div className="relative w-full sm:w-72">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" aria-hidden />
                     <Input
@@ -333,6 +351,7 @@ function MembersSettingsContent() {
                       aria-describedby="members-search-hint"
                     />
                     <MinLengthHint id="members-search-hint" value={memberSearch} />
+                  </div>
                   </div>
                 </div>
               </CardHeader>

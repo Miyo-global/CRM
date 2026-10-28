@@ -24,7 +24,10 @@ export async function GET(req: NextRequest) {
         ? rolesParam.split(",").map((r) => r.trim()).filter(Boolean)
         : undefined;
 
-      const data = await getOrgMembers(session.orgId, page, limit, search, roles);
+      const statusParam = params.get("status");
+      const status = statusParam === "active" || statusParam === "inactive" ? statusParam : undefined;
+
+      const data = await getOrgMembers(session.orgId, page, limit, search, roles, status);
       return ok(data);
     } catch (error) {
       return serverError(error, { route: "organization/members", orgId: session.orgId }, "Failed to load members.");
