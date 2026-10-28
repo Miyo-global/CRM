@@ -89,7 +89,7 @@ function roleNavGroups(role: string): NavGroup[] {
           label: "Core",
           routes: [
             { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-            { label: "System Health", icon: Activity, href: "/dashboard/admin-health" },
+            { label: "Admin Summary", icon: Activity, href: "/dashboard/admin-health" },
             ...(AI_MODULE_ENABLED ? [{ label: "AI Hub", icon: Sparkles, href: "/ai" }] : []),
             { label: "Calendar", icon: CalendarDays, href: "/calendar" },
             { label: "QR Codes", icon: QrCode, href: "/tools/qr-code" },

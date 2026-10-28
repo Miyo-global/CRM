@@ -31,7 +31,7 @@ export default function AdminHealthDashboardPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="System health">
+      <PageWrapper title="Admin summary">
         <div className="grid grid-cols-12 gap-4 xl:gap-6">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="col-span-12 h-36 rounded-lg md:col-span-6 xl:col-span-4" />
@@ -43,7 +43,7 @@ export default function AdminHealthDashboardPage() {
 
   if (error) {
     return (
-      <PageWrapper title="System health">
+      <PageWrapper title="Admin summary">
         <QueryErrorState error={error} onRetry={() => refetch()} />
       </PageWrapper>
     );
@@ -91,7 +91,7 @@ export default function AdminHealthDashboardPage() {
   ];
 
   return (
-    <PageWrapper title="System health">
+    <PageWrapper title="Admin summary">
       <div className="grid grid-cols-12 gap-4 xl:gap-6">
         {kpis.map((kpi) => (
           <Link
