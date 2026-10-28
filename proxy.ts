@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import {
   checkRateLimit,
+  rateLimitHeaders,
   resolveTier,
   isSuspiciousBot,
 } from "@/lib/rate-limit";
@@ -83,10 +84,12 @@ export default async function proxy(req: NextRequest) {
   const { pathname, searchParams } = req.nextUrl;
 
   const tier = resolveTier(pathname);
+  let rlHeaders: Record<string, string> = {};
   if (tier) {
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
     const result = await checkRateLimit(tier, ip);
+    rlHeaders = rateLimitHeaders(result);
 
     if (!result.allowed) {
       logger.warn("Rate limit exceeded", { ip, path: pathname, tier, retryAfterSecs: result.retryAfterSecs });
@@ -95,6 +98,7 @@ export default async function proxy(req: NextRequest) {
         {
           status: 429,
           headers: {
+            ...rlHeaders,
             "Retry-After": String(result.retryAfterSecs),
           },
         },
@@ -139,7 +143,7 @@ export default async function proxy(req: NextRequest) {
   }
 
   if (pathname.startsWith("/api/")) {
-    return NextResponse.next();
+    return NextResponse.next({ headers: rlHeaders });
   }
 
   // Common addresses people try by hand; this app signs in at /signin
