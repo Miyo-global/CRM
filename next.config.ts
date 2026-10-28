@@ -82,6 +82,10 @@ const nextConfig: NextConfig = {
       { source: "/hr/doc-types", destination: "/hr/document-types", permanent: false },
       { source: "/hr/doc-review", destination: "/hr/document-review", permanent: false },
       { source: "/documents/review", destination: "/hr/document-review", permanent: false },
+      // Career growth pages are /hr/career-*.
+      { source: "/hr/promotions", destination: "/hr/career-promotions", permanent: false },
+      { source: "/performance/promotions", destination: "/hr/career-promotions", permanent: false },
+      { source: "/performance/career-ladders", destination: "/hr/career-ladders", permanent: false },
       // --- end QA cluster C ---
     ];
   },
