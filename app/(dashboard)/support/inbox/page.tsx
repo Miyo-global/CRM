@@ -61,6 +61,8 @@ import { PageWrapper } from "@/components/ui/page-wrapper";
 import { getInitials } from "@/lib/format-utils";
 import type { SupportTicketStatus, SupportTicketPriority, SupportTicket } from "@/types/support";
 import { formatIST } from "@/lib/date-utils";
+import { getErrorMessage } from "@/lib/get-error-message";
+import { useOrgFeatureFlags } from "@/lib/api/hooks/ai";
 
 const PRIORITY_TONES: Record<string, Tone> = {
   LOW: "neutral",
@@ -311,8 +313,11 @@ function TicketDetail({ ticketId, onBack, staff }: { ticketId: number; onBack: (
     onSuccess: (data) => {
       if (data.suggestedReply) setReplyText(data.suggestedReply);
     },
-    onError: () => toast.error("AI reply generation failed. Please try again."),
+    // Say why (not configured / provider error) instead of one generic line.
+    onError: (e) => toast.error(getErrorMessage(e)),
   });
+  // Hidden without an AI provider, as on the helpdesk: the route 403s (R3-HR-09).
+  const { data: flags } = useOrgFeatureFlags();
 
   const handleAiReply = useCallback(() => {
     aiReply.mutate(ticketId);
@@ -448,7 +453,7 @@ function TicketDetail({ ticketId, onBack, staff }: { ticketId: number; onBack: (
                 {isInternal ? "Internal note (not visible to client)" : "Public reply"}
               </Label>
             </div>
-            <Button
+            {flags?.aiConfigured ? <Button
               variant="ghost"
               size="xs"
               onClick={handleAiReply}
@@ -459,7 +464,7 @@ function TicketDetail({ ticketId, onBack, staff }: { ticketId: number; onBack: (
             >
               {!aiReply.isPending && <Sparkles aria-hidden />}
               AI Reply
-            </Button>
+            </Button> : null}
           </div>}
           <div className="flex gap-2">
             <Textarea
