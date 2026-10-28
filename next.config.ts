@@ -63,6 +63,7 @@ const nextConfig: NextConfig = {
       { source: "/settings/profile", destination: "/settings#profile", permanent: false },
       // System health / admin summary lives under the dashboard.
       { source: "/settings/system-health", destination: "/dashboard/admin-health", permanent: false },
+      { source: "/health", destination: "/dashboard/admin-health", permanent: false },
       // --- end QA cluster C ---
     ];
   },
