@@ -192,6 +192,9 @@ export default function PayrollPage() {
       workingDays: serverPreview.daysEmployed,
       effectiveDays: Math.max(0, serverPreview.daysEmployed - serverPreview.lopDays),
       salaryStructureDeductions: serverPreview.structureDeductions,
+      pfEmployee: serverPreview.pfEmployee,
+      esiEmployee: serverPreview.esiEmployee,
+      advanceRecoveryAmount: serverPreview.advanceRecoveryAmount,
     };
   }, [serverPreview]);
 

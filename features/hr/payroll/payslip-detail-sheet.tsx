@@ -38,6 +38,10 @@ export interface PayslipPreview {
   workingDays: number;
   effectiveDays: number;
   salaryStructureDeductions?: number;
+  pfEmployee?: number;
+  esiEmployee?: number;
+  /** Loan / salary-advance EMI recovered this month. */
+  advanceRecoveryAmount?: number;
 }
 
 interface PayslipDetailSheetProps {
@@ -202,7 +206,7 @@ export function PayslipDetailSheet({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Salary deductions</span>
                   <span className="text-danger-strong tabular-nums">
-                    -₹{Math.round(payslipPreview?.salaryStructureDeductions || 0).toLocaleString(DEFAULT_LOCALE)}
+                    -{fmtInr(payslipPreview?.salaryStructureDeductions || 0)}
                   </span>
                 </div>
               )}
@@ -212,7 +216,7 @@ export function PayslipDetailSheet({
                     LOP Deduction ({payslipPreview?.lopDays} {payslipPreview?.lopDays === 1 ? "day" : "days"})
                   </span>
                   <span className="text-danger-strong tabular-nums">
-                    -₹{Math.round(payslipPreview?.lopDeduction || 0).toLocaleString(DEFAULT_LOCALE)}
+                    -{fmtInr(payslipPreview?.lopDeduction || 0)}
                   </span>
                 </div>
               )}
@@ -220,15 +224,29 @@ export function PayslipDetailSheet({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Other Deductions</span>
                   <span className="text-danger-strong tabular-nums">
-                    -₹{payslipPreview?.otherDeductions.toLocaleString(DEFAULT_LOCALE)}
+                    -{fmtInr(payslipPreview?.otherDeductions || 0)}
                   </span>
                 </div>
+              )}
+              {(
+                [
+                  ["Provident Fund (PF)", payslipPreview?.pfEmployee],
+                  ["Employee State Insurance (ESI)", payslipPreview?.esiEmployee],
+                  ["Loan / advance EMI", payslipPreview?.advanceRecoveryAmount],
+                ] as const
+              ).map(([label, amount]) =>
+                (amount ?? 0) > 0 ? (
+                  <div key={label} className="flex justify-between">
+                    <span className="text-muted-foreground">{label}</span>
+                    <span className="text-danger-strong tabular-nums">-{fmtInr(amount ?? 0)}</span>
+                  </div>
+                ) : null,
               )}
               <Separator className="my-2" />
               <div className="flex justify-between font-medium">
                 <span>Total Deductions</span>
                 <span className="text-danger-strong tabular-nums">
-                  -₹{Math.round(payslipPreview?.totalDeductions || 0).toLocaleString(DEFAULT_LOCALE)}
+                  -{fmtInr(payslipPreview?.totalDeductions || 0)}
                 </span>
               </div>
             </div>
@@ -239,7 +257,7 @@ export function PayslipDetailSheet({
           <div className="flex justify-between items-center pt-2">
             <span className="text-base font-bold">Net Salary</span>
             <span className="font-display text-2xl font-bold tabular-nums text-success-strong">
-              ₹{Math.round(payslipPreview?.netSalary || 0).toLocaleString(DEFAULT_LOCALE)}
+              {fmtInr(payslipPreview?.netSalary || 0)}
             </span>
           </div>
 
