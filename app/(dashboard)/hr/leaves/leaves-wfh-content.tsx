@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useCallback, useMemo } from "react";
-import { format } from "date-fns";
 import { useSession } from "next-auth/react";
 import {
   useHrPendingWfhRequests,
@@ -36,7 +35,7 @@ import type {
 import { LeavesTabContent } from "./leaves-tab-content";
 import { WfhTabContent } from "./wfh-tab-content";
 import { LeaveApprovalsContent } from "./leave-approvals";
-import { parseCalendarDate } from "@/lib/date-utils";
+import { formatCalendarRange } from "@/lib/date-utils";
 
 export function LeavesWfhContent() {
   const { data: session } = useSession();
@@ -179,8 +178,7 @@ export function LeavesWfhContent() {
                           {leave.user?.firstName} {leave.user?.lastName}
                         </p>
                         <p className="text-2xs tabular-nums text-muted-foreground">
-                          {format(parseCalendarDate(leave.startDate), "MMM dd")} –{" "}
-                          {format(parseCalendarDate(leave.endDate), "MMM dd")}
+                          {formatCalendarRange(leave.startDate, leave.endDate)}
                           {leave.leaveType && (
                             <span className="ml-1 text-warning-strong">
                               · {leave.leaveType.name}

@@ -238,6 +238,25 @@ export function formatCalendarDate(
   return local.toLocaleDateString(locale, options ?? { day: "numeric", month: "short", year: "numeric" });
 }
 
+/**
+ * A span of calendar days in one consistent style: "28 Oct 2026" for a single
+ * day, "28 Oct – 29 Oct 2026" within a year, full dates across years.
+ */
+export function formatCalendarRange(
+  start: string | Date,
+  end?: string | Date | null,
+  locale: string = DEFAULT_LOCALE,
+): string {
+  // A Date here is a local calendar day (as parseCalendarDate returns).
+  const key = (v: string | Date) => (typeof v === "string" ? v.slice(0, 10) : toDatetimeLocalValue(v).slice(0, 10));
+  const s = key(start);
+  const e = key(end ?? start);
+  const full = (v: string) => formatCalendarDate(v, undefined, locale);
+  if (e === s) return full(s);
+  if (s.slice(0, 4) !== e.slice(0, 4)) return `${full(s)} – ${full(e)}`;
+  return `${formatCalendarDate(s, { day: "numeric", month: "short" }, locale)} – ${full(e)}`;
+}
+
 export function formatDisplayDateTime(
   date: Date | string | null | undefined,
   locale: string = DEFAULT_LOCALE,

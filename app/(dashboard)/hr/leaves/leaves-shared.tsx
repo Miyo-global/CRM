@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { format, differenceInCalendarDays, parseISO } from "date-fns";
-import { parseCalendarDate } from "@/lib/date-utils";
+import { parseCalendarDate, formatCalendarRange } from "@/lib/date-utils";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -337,10 +337,8 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
   const createdAt = request.createdAt ? new Date(request.createdAt) : start;
 
   const periodStr = request.isHalfDay
-    ? `${format(start, "MMM d")} (${request.halfDayPeriod === "AM" ? "Morning" : "Afternoon"})`
-    : days === 1
-    ? format(start, "MMM d")
-    : `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
+    ? `${formatCalendarRange(start)} (${request.halfDayPeriod === "AM" ? "Morning" : "Afternoon"})`
+    : formatCalendarRange(start, end);
 
 
   const priority = request.priority || "MEDIUM";
@@ -513,10 +511,8 @@ export function LeaveRequestDetailsSheet({
   const days = request.isHalfDay ? 0.5 : differenceInCalendarDays(end, start) + 1;
   const createdAt = request.createdAt ? new Date(request.createdAt) : start;
   const periodStr = request.isHalfDay
-    ? `${format(start, "MMM d")} (${request.halfDayPeriod === "AM" ? "Morning" : "Afternoon"})`
-    : days === 1
-    ? format(start, "MMM d")
-    : `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
+    ? `${formatCalendarRange(start)} (${request.halfDayPeriod === "AM" ? "Morning" : "Afternoon"})`
+    : formatCalendarRange(start, end);
   const priority = request.priority || "MEDIUM";
   const pConfig = priorityConfig[priority] ?? priorityConfig.MEDIUM;
   const employeeName = formatEmployeeName(request);
