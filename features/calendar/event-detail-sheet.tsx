@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { format } from "date-fns";
+import { parseCalendarDate } from "@/lib/date-utils";
 import {
   Sheet,
   SheetContent,
@@ -197,7 +198,7 @@ export function EventDetailSheet({ event, onClose }: EventDetailSheetProps) {
                     <CalendarIcon className="size-4 shrink-0" />
                     <span className="tabular-nums">
                       {event.allDay
-                        ? format(new Date(event.start), "PPP")
+                        ? format(parseCalendarDate(event.start), "PPP")
                         : `${format(new Date(event.start), "PPp")} – ${format(new Date(event.end), "p")}`}
                     </span>
                   </div>

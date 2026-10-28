@@ -19,7 +19,9 @@ import {
   startOfYear,
   endOfYear,
   startOfDay,
+  endOfDay,
 } from "date-fns";
+import { isDateOnly, parseCalendarDate } from "@/lib/date-utils";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -165,8 +167,10 @@ export function CalendarView() {
       events.map((e) => ({
         id: e.id,
         title: e.title,
-        start: new Date(e.start),
-        end: new Date(e.end),
+        // Leaves/holidays arrive as bare days; read them as local days and end
+        // them at end of day (react-big-calendar treats midnight as exclusive).
+        start: parseCalendarDate(e.start),
+        end: isDateOnly(e.end) ? endOfDay(parseCalendarDate(e.end)) : new Date(e.end),
         allDay: e.allDay ?? false,
         resource: {
           color: e.color,
