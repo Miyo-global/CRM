@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { leaveRequests, leaveBalances, leaveTypes, users, organizationMembers } from "@/lib/db/schema";
 import { eq, and, lte, gte, desc, notInArray, sql } from "drizzle-orm";
 import { formatDateOnly } from "@/lib/date-utils";
-import { ALLOWED_LEAVE_TYPE_NAMES, resolveInitialBalance } from "@/lib/leave-policy";
+import { hasYearlyBalance, resolveInitialBalance } from "@/lib/leave-policy";
 import { HR_LEAVE_NOTIFY_EMAIL } from "@/lib/constants/hr-leave-routing";
 import {
   ensureLeaveTypes,
@@ -44,7 +44,7 @@ export async function GET() {
 
     const seededTypes = await ensureLeaveTypes(orgId);
     const allowedSeeded = seededTypes
-      .filter((t) => ALLOWED_LEAVE_TYPE_NAMES.has(t.name))
+      .filter((t) => hasYearlyBalance(t.name))
       .map((t) => ({ id: t.id, name: t.name, daysPerYear: t.daysPerYear }));
     await ensureUserBalances(orgId, userId, allowedSeeded);
 
@@ -88,7 +88,7 @@ export async function GET() {
     const seenNames = new Set<string>();
     const balances = rawBalances
       .filter((b) => {
-        if (!b.typeName || !ALLOWED_LEAVE_TYPE_NAMES.has(b.typeName) || seenNames.has(b.typeName)) return false;
+        if (!b.typeName || !hasYearlyBalance(b.typeName) || seenNames.has(b.typeName)) return false;
         seenNames.add(b.typeName);
         return true;
       })

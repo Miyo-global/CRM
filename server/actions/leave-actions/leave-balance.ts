@@ -15,7 +15,7 @@ import { logger } from "@/lib/logger";
 import {
   DEFAULT_LEAVE_TYPES,
   LEAVE_POLICY,
-  ALLOWED_LEAVE_TYPE_NAMES,
+  hasYearlyBalance,
   resolveInitialBalance,
 } from "@/lib/leave-policy";
 import { calculateLeaveWorkingDays } from "@/lib/validations/leave-request";
@@ -285,7 +285,7 @@ export async function getLeaveContext() {
   if (!member) return { error: "No organization found" };
 
   const types = await ensureLeaveTypes(member.orgId);
-  const allowedTypes = types.filter((t) => ALLOWED_LEAVE_TYPE_NAMES.has(t.name));
+  const allowedTypes = types.filter((t) => hasYearlyBalance(t.name));
   const seenTypeNames = new Set<string>();
   const filteredTypes = allowedTypes.filter((t) => {
     if (seenTypeNames.has(t.name)) return false;
@@ -317,7 +317,7 @@ export async function getLeaveContext() {
       ),
     );
 
-  const allowedBalances = rawBalances.filter((b) => b.typeName && ALLOWED_LEAVE_TYPE_NAMES.has(b.typeName));
+  const allowedBalances = rawBalances.filter((b) => b.typeName && hasYearlyBalance(b.typeName));
   const seenNames = new Set<string>();
   const balances = allowedBalances.filter((b) => {
     if (!b.typeName || seenNames.has(b.typeName)) return false;

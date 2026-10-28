@@ -51,11 +51,14 @@ export const DEFAULT_LEAVE_TYPES = [
   { name: LEAVE_POLICY.UNPAID.name, daysPerYear: LEAVE_POLICY.UNPAID.daysPerYear, carryForward: LEAVE_POLICY.UNPAID.carryForward },
 ] as const;
 
-export const ALLOWED_LEAVE_TYPE_NAMES: ReadonlySet<string> = new Set([
-  LEAVE_POLICY.CASUAL.name,
-  LEAVE_POLICY.SICK.name,
-  LEAVE_POLICY.UNPAID.name,
-]);
+/**
+ * Leave types that get a yearly balance row: the defaults plus any type HR
+ * adds on the policy page. Comp-off is credited per grant, not per year, so
+ * it stays out (it was never in the old fixed list either).
+ */
+export function hasYearlyBalance(typeName: string | null | undefined): typeName is string {
+  return !!typeName && typeName !== COMP_OFF_LEAVE_NAME;
+}
 
 export const LEAVE_MAX_DAYS: Record<string, number> = {
   [LEAVE_POLICY.SICK.name]: LEAVE_POLICY.SICK.daysPerYear,

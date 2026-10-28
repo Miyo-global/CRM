@@ -28,3 +28,13 @@ export function useUpdateLeaveType() {
     onSuccess: () => qc.invalidateQueries({ queryKey: leaveTypeKeys.list }),
   });
 }
+
+/** Adds a leave type next to the defaults (INFO-no-add-leave-type-button). */
+export function useCreateLeaveType() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { name: string; daysPerYear: number; carryForward?: boolean }) =>
+      apiClient.post<OrgLeaveType>("/hr/leave-types", body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: leaveTypeKeys.list }),
+  });
+}
