@@ -11,6 +11,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { Tone } from "@/lib/design/tones";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 
 const STATUS_TONE: Record<string, Tone> = {
   DRAFT: "neutral",
@@ -50,12 +52,14 @@ interface PayrollRecordPreviewSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   payroll: PayrollWithUser | null;
+  onDownload?: (payrollId: number) => void;
 }
 
 export function PayrollRecordPreviewSheet({
   open,
   onOpenChange,
   payroll,
+  onDownload,
 }: PayrollRecordPreviewSheetProps) {
   if (!payroll) return null;
 
@@ -89,6 +93,14 @@ export function PayrollRecordPreviewSheet({
       title="Payroll preview"
       description="Read-only breakdown for this payroll record."
       showSubmit={false}
+      footer={
+        onDownload ? (
+          <Button variant="outline" size="sm" className="gap-1" onClick={() => onDownload(payroll.id)}>
+            <Download className="size-3.5 shrink-0" aria-hidden />
+            Download {payroll.status === "PAID" ? "" : payroll.status === "DRAFT" ? "draft " : "approved "}PDF
+          </Button>
+        ) : undefined
+      }
     >
       <Card className="gap-0">
         <CardHeader className="pb-3">

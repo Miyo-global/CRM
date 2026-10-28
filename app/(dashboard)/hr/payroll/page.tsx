@@ -597,6 +597,7 @@ export default function PayrollPage() {
             if (!open) setPreviewPayroll(null);
           }}
           payroll={previewPayroll}
+          onDownload={handleDownloadPayslip}
         />
 
         <ConfirmDialog
