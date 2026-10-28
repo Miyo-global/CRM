@@ -1050,6 +1050,7 @@ export async function getAllPayrolls(orgId: string, month: string): Promise<Payr
       userFirstName: users.firstName,
       userLastName: users.lastName,
       userDesignation: users.designation,
+      userEmployeeId: users.employeeId,
       userMonthlySalary: users.monthlySalary,
     })
     .from(payrolls)
@@ -1093,6 +1094,7 @@ export async function getAllPayrolls(orgId: string, month: string): Promise<Payr
       firstName: r.userFirstName,
       lastName: r.userLastName,
       designation: r.userDesignation,
+      employeeId: r.userEmployeeId,
       monthlySalary: r.userMonthlySalary,
     },
   })) as PayrollWithUser[];

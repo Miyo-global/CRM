@@ -867,6 +867,7 @@ export interface PayrollWithUser extends Payroll {
     firstName: string | null;
     lastName: string | null;
     designation: string | null;
+    employeeId?: string | null;
     monthlySalary: string | null;
   } | null;
 }
