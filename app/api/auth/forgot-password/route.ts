@@ -9,6 +9,7 @@ import { hashToken } from "@/lib/secret-crypto";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { isPortalAccessBlocked } from "@/lib/auth/portal-access";
+import { afterResponse } from "@/lib/after-response";
 
 const schema = z.object({ email: z.string().email() });
 
@@ -56,9 +57,9 @@ export async function POST(req: NextRequest) {
 
   logger.info("Auth: password reset requested", { email });
 
-  sendPasswordResetEmail(email, resetToken).catch((e) => {
-    logger.error("Failed to send password reset email", { error: e instanceof Error ? e.message : "Unknown", email });
-  });
+  // A bare un-awaited send can be cut off when the serverless function
+  // returns, so the page said "sent" and no mail arrived (QA P1 forgot-password).
+  afterResponse("auth/forgot-password email", () => sendPasswordResetEmail(email, resetToken));
 
   return done();
 }

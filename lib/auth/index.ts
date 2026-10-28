@@ -16,6 +16,7 @@ import { clearFailedAttempts, recordFailedAttempt } from "./failed-attempts";
 import { getTodayString } from "@/lib/date-utils";
 import { createAuditLog } from "../audit-log";
 import { isPortalAccessBlocked } from "./portal-access";
+import { afterResponse } from "../after-response";
 
 interface UserSessionCache {
   isActive: boolean | null;
@@ -186,7 +187,7 @@ const credentialsProvider = Credentials({
         const { attempts, lockedUntil } = await recordFailedAttempt(user.id, user.loginAttempts);
         if (lockedUntil) {
           logger.warn("Auth: account locked after failed attempts", { userId: user.id, email: normalizedEmail, attempts, lockedUntil });
-          sendAccountLockedEmail(user.email, attempts, lockedUntil).catch((e) => logger.error("Auth: account-locked email failed", { userId: user.id, error: e }));
+          afterResponse("Auth: account-locked email", () => sendAccountLockedEmail(user.email, attempts, lockedUntil));
         } else {
           logger.warn("Auth: failed login attempt", { userId: user.id, email: normalizedEmail, attempt: attempts });
         }
