@@ -34,7 +34,11 @@ export default function NotificationPreferencesPage() {
   const [quietStart, setQuietStart] = useState("");
   const [quietEnd, setQuietEnd] = useState("");
   const [categories, setCategories] = useState<Record<string, boolean>>({});
-  const [dirty, setDirty] = useState(false);
+  // Dirty = differs from what is saved, so toggling back clears it
+  // (P3-notifications-settings-no-dirty-state).
+  const current = JSON.stringify({ emailEnabled, pushEnabled, inAppEnabled, smsEnabled, quietStart, quietEnd, categories });
+  const [saved, setSaved] = useState(current);
+  const dirty = current !== saved;
 
   useEffect(() => {
     if (prefs) {
@@ -49,19 +53,24 @@ export default function NotificationPreferencesPage() {
         cats[c.key] = prefs.categories?.[c.key] ?? true;
       });
       setCategories(cats);
+      setSaved(JSON.stringify({
+        emailEnabled: prefs.emailEnabled ?? true,
+        pushEnabled: prefs.pushEnabled ?? true,
+        inAppEnabled: prefs.inAppEnabled ?? true,
+        smsEnabled: prefs.smsEnabled ?? false,
+        quietStart: prefs.quietHoursStart ?? "",
+        quietEnd: prefs.quietHoursEnd ?? "",
+        categories: cats,
+      }));
     }
   }, [prefs]);
 
-  const markDirty = useCallback(() => setDirty(true), []);
-
   const handleChannelToggle = useCallback((setter: (v: boolean) => void) => (val: boolean) => {
     setter(val);
-    setDirty(true);
   }, []);
 
   const handleCategoryToggle = useCallback((key: string) => (val: boolean) => {
     setCategories(prev => ({ ...prev, [key]: val }));
-    setDirty(true);
   }, []);
 
   const handleSave = useCallback(() => {
@@ -76,11 +85,11 @@ export default function NotificationPreferencesPage() {
         categories,
       },
       {
-        onSuccess: () => { toast.success("Notification preferences saved"); setDirty(false); },
+        onSuccess: () => { toast.success("Notification preferences saved"); setSaved(current); },
         onError: () => toast.error("Failed to save preferences"),
       }
     );
-  }, [emailEnabled, pushEnabled, inAppEnabled, smsEnabled, quietStart, quietEnd, categories, updatePrefs]);
+  }, [emailEnabled, pushEnabled, inAppEnabled, smsEnabled, quietStart, quietEnd, categories, current, updatePrefs]);
 
   if (isLoading) {
     return (
@@ -159,7 +168,7 @@ export default function NotificationPreferencesPage() {
                     type="time"
                     value={quietStart}
                     className="tabular-nums"
-                    onChange={e => { setQuietStart(e.target.value); markDirty(); }}
+                    onChange={e => { setQuietStart(e.target.value); }}
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -169,7 +178,7 @@ export default function NotificationPreferencesPage() {
                     type="time"
                     value={quietEnd}
                     className="tabular-nums"
-                    onChange={e => { setQuietEnd(e.target.value); markDirty(); }}
+                    onChange={e => { setQuietEnd(e.target.value); }}
                   />
                 </div>
               </div>
