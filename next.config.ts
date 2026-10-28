@@ -121,6 +121,10 @@ const nextConfig: NextConfig = {
       { source: "/timesheets/my", destination: "/timesheets", permanent: false },
       { source: "/my-timesheets", destination: "/timesheets", permanent: false },
       { source: "/work-logs", destination: "/hr/work-logs", permanent: false },
+      // All announcements are listed on /dashboard/announcements.
+      { source: "/announcements", destination: "/dashboard/announcements", permanent: false },
+      { source: "/hr/announcements", destination: "/dashboard/announcements", permanent: false },
+      { source: "/hr/announcement", destination: "/dashboard/announcements", permanent: false },
       // --- end QA cluster C ---
     ];
   },
