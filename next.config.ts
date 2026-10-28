@@ -68,6 +68,8 @@ const nextConfig: NextConfig = {
       { source: "/analytics", destination: "/hr/analytics", permanent: false },
       { source: "/audit", destination: "/settings/audit-log", permanent: false },
       { source: "/settings/audit", destination: "/settings/audit-log", permanent: false },
+      { source: "/hr/org", destination: "/hr/org-chart", permanent: false },
+      { source: "/org-chart", destination: "/hr/org-chart", permanent: false },
       // --- end QA cluster C ---
     ];
   },
