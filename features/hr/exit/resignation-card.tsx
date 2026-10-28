@@ -108,6 +108,7 @@ export function ResignationCard({
             )}
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs tabular-nums text-muted-foreground">
+            {r.user?.employeeId && <span className="font-mono">{r.user.employeeId}</span>}
             {r.user?.designation && <span>{r.user.designation}</span>}
             {r.lastWorkingDate && (
               <span className="flex items-center gap-1">
