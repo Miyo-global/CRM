@@ -385,8 +385,10 @@ export default function CareerLaddersPage() {
         onSubmit={handleCreate}
         submitLabel="Create Ladder"
         isPending={create.isPending}
-        submitDisabled={!isFormValid}
-        submitDisabledReason={titleError ?? descError}
+        // Title errors wait for the field to be touched (or a submit attempt);
+        // flagging an empty, untouched form on open read as an error.
+        submitDisabled={titleTouched ? !isFormValid : !!descError}
+        submitDisabledReason={titleTouched ? (titleError ?? descError) : descError}
       >
         <div className="space-y-4">
           <div className="space-y-1.5">
@@ -399,6 +401,7 @@ export default function CareerLaddersPage() {
               onChange={(e) => { setTitle(filterCareerLadderTitleInput(e.target.value)); setTitleTouched(true); }}
               onBlur={() => setTitleTouched(true)}
               maxLength={120}
+              aria-required
               aria-invalid={titleTouched && !!titleError}
               className={cn(titleTouched && titleError && "border-destructive")}
             />
