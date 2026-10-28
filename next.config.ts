@@ -55,6 +55,8 @@ const nextConfig: NextConfig = {
       // Data export lives at /settings/data-hub (P3-data-hub-route-404).
       { source: "/hr/data-hub", destination: "/settings/data-hub", permanent: false },
       { source: "/data-hub", destination: "/settings/data-hub", permanent: false },
+      // The sidebar calls it Data Export (P3-settings-data-export-route-404).
+      { source: "/settings/data-export", destination: "/settings/data-hub", permanent: false },
       // --- end QA cluster C ---
     ];
   },
