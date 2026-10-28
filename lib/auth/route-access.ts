@@ -32,6 +32,7 @@ export const ORG_ADMIN_SETTINGS_PAGES = [
   "permissions",
   "webhooks",
   "audit-log",
+  "email-log",
   "ai",
   // Organization profile and the data export hub are org-wide controls, not
   // people-team tools.

@@ -11,6 +11,7 @@ const GROUP_OF: Record<string, string> = {
   "/settings/roles": "Access & security",
   "/settings/permissions": "Access & security",
   "/settings/audit-log": "Access & security",
+  "/settings/email-log": "Access & security",
   "/settings/webhooks": "Integrations",
   "/settings/ai": "Integrations",
 };
