@@ -8,6 +8,24 @@ import { requireProjectAccess } from "@/lib/projects/require-project-access";
 import { projectRoleSchema } from "@/lib/projects/project-roles";
 import { allOrgMembers } from "@/lib/projects/assignable-users";
 import { leavesProjectWithoutLead } from "@/lib/projects/member-guard";
+import { createAuditLog, type AuditAction } from "@/lib/audit-log";
+
+/** QA P2-audit-log-missing-project-events: project membership changes are audited. */
+function auditMember(
+  session: { user: { id: string }; orgId: string },
+  action: AuditAction,
+  projectId: number,
+  metadata: Record<string, unknown>,
+) {
+  void createAuditLog({
+    action,
+    userId: session.user.id,
+    orgId: session.orgId,
+    targetId: String(projectId),
+    targetType: "project",
+    metadata,
+  });
+}
 
 const addMemberSchema = z.object({
   userId: z.string().min(1).max(200),
@@ -82,6 +100,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       .values({ projectId: guard.projectId, userId: body.userId, role: body.role })
       .returning({ id: projectMembers.id, userId: projectMembers.userId, role: projectMembers.role, joinedAt: projectMembers.joinedAt });
 
+    auditMember(session, "project.member_added", guard.projectId, { memberId: body.userId, role: body.role });
     return ok(member, 201);
   });
 }
@@ -95,7 +114,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     if (body.role === "OWNER" && guard.role !== "OWNER") return err("Only owners can make someone an owner", 403);
 
     const scope = and(eq(projectMembers.projectId, guard.projectId), eq(projectMembers.userId, body.userId));
-    const existing = await db.query.projectMembers.findFirst({ where: scope, columns: { id: true } });
+    const existing = await db.query.projectMembers.findFirst({ where: scope, columns: { id: true, role: true } });
     if (!existing) return err("Member not found", 404);
     if (await leadCheck(guard.projectId, body.userId, body.role)) return err(LEAD_REQUIRED, 409);
 
@@ -104,6 +123,11 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       .set({ role: body.role })
       .where(scope)
       .returning({ userId: projectMembers.userId, role: projectMembers.role });
+    auditMember(session, "project.member_role_changed", guard.projectId, {
+      memberId: body.userId,
+      from: existing.role,
+      to: body.role,
+    });
     return ok(member);
   });
 }
@@ -138,6 +162,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       }
     });
 
+    auditMember(session, "project.member_removed", projectId, { memberId: userId });
     return ok({ success: true });
   });
 }

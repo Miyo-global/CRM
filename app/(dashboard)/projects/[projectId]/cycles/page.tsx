@@ -191,9 +191,14 @@ export default function CyclesPage({ params }: { params: Promise<{ projectId: st
                   />
                 </div>
               </div>
-              <Button type="submit" loading={createMutation.isPending} className="w-full">
-                {createMutation.isPending ? "Creating..." : "Create Cycle"}
-              </Button>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setCreateOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" loading={createMutation.isPending} className="flex-1">
+                  {createMutation.isPending ? "Creating..." : "Create Cycle"}
+                </Button>
+              </div>
             </form>
           </SheetContent>
         </Sheet>

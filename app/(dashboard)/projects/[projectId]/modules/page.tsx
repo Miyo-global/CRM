@@ -323,13 +323,14 @@ export default function ModulesPage({
                     )}
                   />
                 </div>
-                <Button
-                  type="submit"
-                  loading={createMutation.isPending}
-                  className="mt-1 w-full"
-                >
-                  {createMutation.isPending ? "Creating..." : "Create Module"}
-                </Button>
+                <div className="mt-1 flex gap-2">
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => setCreateOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" loading={createMutation.isPending} className="flex-1">
+                    {createMutation.isPending ? "Creating..." : "Create Module"}
+                  </Button>
+                </div>
               </form>
             </SheetContent>
           </Sheet>

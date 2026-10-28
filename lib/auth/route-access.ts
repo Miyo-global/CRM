@@ -71,11 +71,20 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/hr/work-logs": EVERYONE,
   "/hr/career-ladders": EVERYONE,
   "/hr/holidays": EVERYONE,
+  // Read-only for employees: the API returns only PUBLISHED versions to a
+  // non-manager and every write is withAdmin (QA P2-emp-handbook).
+  "/hr/handbook": EVERYONE,
+  // The kudos wall: every member already gets the shoutout notification that
+  // links here, and the API lets any member read and give kudos. Email export
+  // stays admin-only inside its route (QA P2-employee-recognition).
+  "/hr/recognition": EVERYONE,
   "/hr/performance": HR_TEAM,
   "/hr/org-chart": HR_TEAM,
   "/hr/my-payslips": EVERYONE,
   "/hr/my-documents": EVERYONE,
   "/hr/my-assets": EVERYONE,
+  // Own completed reviews and goals; the APIs scope a non-admin to self.
+  "/hr/my-reviews": EVERYONE,
   // Own claims and own loans: both APIs scope a non-admin to their own rows
   // (MIYO-0152).
   "/hr/reimbursements": EVERYONE,

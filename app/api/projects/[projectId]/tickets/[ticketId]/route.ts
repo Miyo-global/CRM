@@ -15,6 +15,8 @@ import {
 import { eq, and, desc, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-project-access";
+import { canArchiveTicket } from "@/lib/projects/project-roles";
+import { createAuditLog } from "@/lib/audit-log";
 import { diffTicketActivity, recordTicketActivity } from "@/lib/projects/record-ticket-activity";
 import { allOrgMembers } from "@/lib/projects/assignable-users";
 import { notifyTicketUpdate } from "@/lib/projects/ticket-update-notifications";
@@ -232,12 +234,15 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     if (id === null) return err("Ticket not found", 404);
     const force = req.nextUrl.searchParams.get("force") === "true";
     if (req.nextUrl.searchParams.get("permanent") === "true") {
-      return deletePermanently(session.orgId, guard.projectId, id, guard.role);
+      return deletePermanently(session.orgId, guard.projectId, id, guard.role, session.user.id);
     }
 
     const scope = and(eq(tickets.id, id), eq(tickets.projectId, guard.projectId), eq(tickets.orgId, session.orgId), isNull(tickets.deletedAt));
-    const ticket = await db.query.tickets.findFirst({ where: scope, columns: { id: true } });
+    const ticket = await db.query.tickets.findFirst({ where: scope, columns: { id: true, reporterId: true } });
     if (!ticket) return err("Ticket not found", 404);
+    if (!canArchiveTicket(guard.role, ticket.reporterId, session.user.id)) {
+      return err("Only the project owner, a manager or the reporter can archive this ticket", 403);
+    }
 
     if (!force) {
       const blockedBy = await db.query.workItemRelations.findMany({
@@ -265,11 +270,11 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
  * project owner (org admins resolve to OWNER). The tables without an
  * ON DELETE CASCADE are cleared first; logged hours stay, unlinked.
  */
-async function deletePermanently(orgId: string, projectId: number, id: number, role: string) {
+async function deletePermanently(orgId: string, projectId: number, id: number, role: string, actorId: string) {
   if (role !== "OWNER") return err("Only an admin or the project owner can delete tickets", 403);
   const ticket = await db.query.tickets.findFirst({
     where: and(eq(tickets.id, id), eq(tickets.projectId, projectId), eq(tickets.orgId, orgId)),
-    columns: { id: true },
+    columns: { id: true, title: true },
   });
   if (!ticket) return err("Ticket not found", 404);
 
@@ -282,6 +287,15 @@ async function deletePermanently(orgId: string, projectId: number, id: number, r
     await tx.delete(ticketAttachments).where(eq(ticketAttachments.ticketId, id));
     await tx.delete(ticketLabelMappings).where(eq(ticketLabelMappings.ticketId, id));
     await tx.delete(tickets).where(eq(tickets.id, id));
+  });
+  // Its activity rows go with it, so the audit log is the only trace left.
+  void createAuditLog({
+    action: "ticket.deleted",
+    userId: actorId,
+    orgId,
+    targetId: String(id),
+    targetType: "ticket",
+    metadata: { projectId, title: ticket.title },
   });
   return ok({ success: true });
 }

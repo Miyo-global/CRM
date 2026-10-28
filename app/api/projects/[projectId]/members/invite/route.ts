@@ -9,6 +9,7 @@ import { requireProjectAccess } from "@/lib/projects/require-project-access";
 import { projectRoleSchema } from "@/lib/projects/project-roles";
 import { createOrgInvitation } from "@/lib/org/create-invitation";
 import { EMAIL_ADDRESS_SCHEMA } from "@/lib/utils/email-validation";
+import { createAuditLog } from "@/lib/audit-log";
 
 const inviteSchema = z.object({
   email: EMAIL_ADDRESS_SCHEMA,
@@ -40,6 +41,14 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         .onConflictDoNothing()
         .returning({ userId: projectMembers.userId });
       if (!member) return err("This person is already on the project", 409);
+      void createAuditLog({
+        action: "project.member_added",
+        userId: session.user.id,
+        orgId: session.orgId,
+        targetId: String(guard.projectId),
+        targetType: "project",
+        metadata: { memberId: user.id, role: body.role },
+      });
       return ok({ added: true, invited: false }, 201);
     }
 

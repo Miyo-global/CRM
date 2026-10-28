@@ -25,7 +25,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     const ticketCols = { id: tickets.id, title: tickets.title, ticketNumber: tickets.ticketNumber, status: tickets.status, dueDate: tickets.dueDate, priority: tickets.priority };
 
     const [project, byStatus, overdue, unassignedUrgent, stale, doneThisWeek] = await Promise.all([
-      db.query.projects.findFirst({ where: eq(projects.id, projectId), columns: { status: true, endDate: true, key: true } }),
+      db.query.projects.findFirst({ where: eq(projects.id, projectId), columns: { status: true, startDate: true, endDate: true, key: true } }),
       db.select({ status: tickets.status, n: count() }).from(tickets).where(live).groupBy(tickets.status),
       db.select(ticketCols).from(tickets).where(and(open, lt(tickets.dueDate, today))).orderBy(asc(tickets.dueDate)).limit(5),
       db.select(ticketCols).from(tickets).where(and(open, isNull(tickets.assigneeId), inArray(tickets.priority, ["HIGH", "URGENT"]))).orderBy(desc(tickets.updatedAt)).limit(5),
@@ -48,7 +48,14 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     }
 
     const [{ n: overdueCount }] = await db.select({ n: count() }).from(tickets).where(and(open, lt(tickets.dueDate, today)));
-    const health = computeHealth({ projectStatus: project?.status ?? null, endDate: project?.endDate ?? null, total, done });
+    const health = computeHealth({
+      projectStatus: project?.status ?? null,
+      startDate: project?.startDate ?? null,
+      endDate: project?.endDate ?? null,
+      total,
+      done,
+      overdue: Number(overdueCount),
+    });
 
     return ok({
       counts: {

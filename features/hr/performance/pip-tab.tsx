@@ -791,9 +791,14 @@ export function PipTab() {
                 {formErrors.consequences && <p className="text-2xs text-destructive">{formErrors.consequences}</p>}
               </div>
 
-              <Button className="w-full" onClick={handleSubmit} disabled={createPip.isPending || updatePip.isPending} loading={createPip.isPending || updatePip.isPending}>
-                {editPip ? "Save changes" : "Create PIP"}
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => { setCreateOpen(false); resetForm(); }}>
+                  Cancel
+                </Button>
+                <Button className="flex-1" onClick={handleSubmit} disabled={createPip.isPending || updatePip.isPending} loading={createPip.isPending || updatePip.isPending}>
+                  {editPip ? "Save changes" : "Create PIP"}
+                </Button>
+              </div>
             </div>
           </div>
         </SheetContent>

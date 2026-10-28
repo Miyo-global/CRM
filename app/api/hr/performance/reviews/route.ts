@@ -1,7 +1,8 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { performanceReviews, organizationMembers, users, reviewCycles } from "@/lib/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
+import { RELEASED_REVIEW_STATUSES } from "@/lib/hr/review-visibility";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import { createPerformanceReviewSchema } from "@/lib/validations/hr";
 import type { NextRequest } from "next/server";
@@ -21,6 +22,8 @@ export async function GET(req: NextRequest) {
     const conditions = [eq(performanceReviews.orgId, session.orgId)];
     if (filterUserId) conditions.push(eq(performanceReviews.userId, filterUserId));
     else if (!isAdmin) conditions.push(eq(performanceReviews.userId, session.user.id));
+    // An employee sees their own reviews once released, never a draft.
+    if (!isAdmin) conditions.push(inArray(performanceReviews.status, [...RELEASED_REVIEW_STATUSES]));
     if (cycleId) conditions.push(eq(performanceReviews.cycleId, Number(cycleId)));
 
     const limit = Math.min(Number(req.nextUrl.searchParams.get("limit") ?? 50), 100);

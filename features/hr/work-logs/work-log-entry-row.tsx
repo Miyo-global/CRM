@@ -5,6 +5,7 @@ import { format, isWeekend } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Loader2, Link2, ExternalLink, Ticket, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ticketKey } from "@/lib/projects/ticket-key";
@@ -26,8 +27,6 @@ interface WorkLogEntryRowProps {
   status?: string;
 }
 
-const AUTOSAVE_DELAY_MS = 1500;
-
 export function WorkLogEntryRow({
   date,
   initialContent,
@@ -44,7 +43,6 @@ export function WorkLogEntryRow({
   // "idle" | "dirty" | "saving" | "saved"
   const [saveState, setSaveState] = useState<"idle" | "dirty" | "saving" | "saved">("idle");
 
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveSeq = useRef(0);
   const onSaveRef = useRef(onSave);
@@ -62,12 +60,10 @@ export function WorkLogEntryRow({
 
   // Cleanup on unmount
   useEffect(() => () => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
     if (savedTimer.current) clearTimeout(savedTimer.current);
   }, []);
 
   const doSave = useCallback((text: string, link: string) => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
     if (savedTimer.current) clearTimeout(savedTimer.current);
     const seq = ++saveSeq.current;
     setSaveState("saving");
@@ -88,31 +84,45 @@ export function WorkLogEntryRow({
       });
   }, []);
 
-  const scheduleAutoSave = useCallback((text: string, link: string) => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    setSaveState("dirty");
-    debounceTimer.current = setTimeout(() => doSave(text, link), AUTOSAVE_DELAY_MS);
-  }, [doSave]);
+  // QA P3-work-log-blur-autosave: typing or leaving the field no longer
+  // saves. An edit stays a draft until Save (or Ctrl/Cmd+Enter); Cancel or
+  // Escape puts the saved text back.
+  const markDirty = (text: string, link: string) =>
+    setSaveState(text !== initialContent || link !== initialWorkLink ? "dirty" : "idle");
+
+  const handleSave = () => {
+    if (readOnly || saveState === "saving") return;
+    doSave(content, workLink);
+  };
+
+  const handleCancel = () => {
+    setContent(initialContent);
+    setWorkLink(initialWorkLink);
+    setSaveState("idle");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (saveState !== "dirty") return;
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      handleCancel();
+    }
+  };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (readOnly) return;
     const val = e.target.value;
     setContent(val);
-    scheduleAutoSave(val, workLink);
+    markDirty(val, workLink);
   };
 
   const handleLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setWorkLink(val);
-    scheduleAutoSave(content, val);
-  };
-
-  const handleBlur = () => {
-    if (readOnly) return;
-    const hasChanges = content !== initialContent || workLink !== initialWorkLink;
-    if (hasChanges && saveState !== "saving") {
-      doSave(content, workLink);
-    }
+    markDirty(content, val);
   };
 
   const isWeekendDay = isWeekend(date);
@@ -205,7 +215,7 @@ export function WorkLogEntryRow({
         <Textarea
           value={content}
           onChange={handleContentChange}
-          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
           readOnly={readOnly}
           placeholder={
             isWeekendDay
@@ -229,8 +239,19 @@ export function WorkLogEntryRow({
               type="url"
               value={workLink}
               onChange={handleLinkChange}
-              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
             />
+          </div>
+        )}
+
+        {!readOnly && (saveState === "dirty" || saveState === "saving") && (
+          <div className="flex items-center justify-end gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={handleCancel} disabled={saveState === "saving"}>
+              Cancel
+            </Button>
+            <Button type="button" size="sm" onClick={handleSave} loading={saveState === "saving"}>
+              Save
+            </Button>
           </div>
         )}
 

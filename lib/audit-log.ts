@@ -56,6 +56,16 @@ export type AuditAction =
   | "project.deleted"
   | "project.restored"
   | "project.created_from_deal"
+  // QA P2-audit-log-missing-project-events: membership and ticket changes.
+  | "project.member_added"
+  | "project.member_removed"
+  | "project.member_role_changed"
+  | "ticket.created"
+  | "ticket.updated"
+  | "ticket.status_changed"
+  | "ticket.archived"
+  | "ticket.restored"
+  | "ticket.deleted"
   | "expense.created"
   | "expense.updated"
   | "expense.approved"
@@ -155,6 +165,15 @@ export const ALWAYS_LISTED_AUDIT_ACTIONS: readonly AuditAction[] = [
   "EMPLOYEE_PT_SET",
   "EMPLOYEE_PT_UPDATED",
   "email.test_sent",
+  "project.member_added",
+  "project.member_removed",
+  "project.member_role_changed",
+  "ticket.created",
+  "ticket.updated",
+  "ticket.status_changed",
+  "ticket.archived",
+  "ticket.restored",
+  "ticket.deleted",
 ];
 
 /**

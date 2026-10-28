@@ -5,6 +5,7 @@ import { performanceReviews } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { updatePerformanceReviewSchema } from "@/lib/validations/hr";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
+import { canReadReview } from "@/lib/hr/review-visibility";
 import type { NextRequest } from "next/server";
 
 export async function GET(
@@ -21,11 +22,7 @@ export async function GET(
       with: { user: USER_CARD, reviewer: USER_CARD, cycle: true },
     });
     if (!review) return err("Review not found.", 404);
-    if (
-      !isAdminOrOwner(session.user.role) &&
-      review.userId !== session.user.id &&
-      review.reviewerId !== session.user.id
-    ) {
+    if (!canReadReview(review, { id: session.user.id, role: session.user.role })) {
       return err("Not authorized.", 403);
     }
     return ok(review);

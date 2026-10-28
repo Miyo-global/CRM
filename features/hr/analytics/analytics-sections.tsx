@@ -407,8 +407,10 @@ export function ExecutiveKpiStrip({
         { label: "Attrition Rate", icon: IcoTrendDown, tone: "danger", value: val(data?.attritionRate != null ? `${data.attritionRate}%` : "—") },
         { label: "Hiring Rate", icon: IcoUserPlus, tone: "success", value: val(data?.hiringRate != null ? `${data.hiringRate}%` : "—") },
         { label: "Avg Tenure", icon: IcoTimer, value: val(data?.avgTenureMonths != null ? `${data.avgTenureMonths}mo` : "—") },
-        { label: "Gender Diversity", icon: IcoDiversity, value: val(data?.diversityRatio != null ? `${data.diversityRatio}%` : "—") },
-        { label: "Org Health Score", icon: IcoActivity, tone: data?.orgHealthScore != null ? healthTone : undefined, value: val(data?.orgHealthScore != null ? String(data.orgHealthScore) : "—") },
+        // QA P2-hr-analytics-metric-inconsistency: say what each figure means,
+        // so 0% women next to "1 male (5%)" in the panel does not read as a contradiction.
+        { label: "Gender Diversity", icon: IcoDiversity, hint: "Women, of recorded genders", value: val(data?.diversityRatio != null ? `${data.diversityRatio}%` : "—") },
+        { label: "Org Health Score", icon: IcoActivity, hint: <span title="0–100: 40% low attrition, 30% gender diversity, 30% tenure (36 months scores full). A missing input scores 50.">Attrition, diversity, tenure</span>, tone: data?.orgHealthScore != null ? healthTone : undefined, value: val(data?.orgHealthScore != null ? String(data.orgHealthScore) : "—") },
       ]}
     />
   );
