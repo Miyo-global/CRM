@@ -71,6 +71,9 @@ export const ROUTE_ROLE_MAP: Record<string, string[]> = {
   "/hr/work-logs": EVERYONE,
   "/hr/career-ladders": EVERYONE,
   "/hr/holidays": EVERYONE,
+  // Read-only for employees: the API returns only PUBLISHED versions to a
+  // non-manager and every write is withAdmin (QA P2-emp-handbook).
+  "/hr/handbook": EVERYONE,
   "/hr/performance": HR_TEAM,
   "/hr/org-chart": HR_TEAM,
   "/hr/my-payslips": EVERYONE,

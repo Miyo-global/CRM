@@ -110,6 +110,11 @@ describe("previously unmapped pages (QA-0065)", () => {
     }
   });
 
+  it("opens the published handbook to every role but keeps /hr closed", () => {
+    expect(canAccessRoute("/hr/handbook", "EMPLOYEE")).toBe(true);
+    expect(canAccessRoute("/hr", "EMPLOYEE")).toBe(false);
+  });
+
   it("still lets everyone open their own leave and timesheets", () => {
     expect(canAccessRoute("/hr/leaves", "EMPLOYEE")).toBe(true);
     expect(canAccessRoute("/timesheets", "EMPLOYEE")).toBe(true);
