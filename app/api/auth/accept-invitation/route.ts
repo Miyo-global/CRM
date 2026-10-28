@@ -12,6 +12,8 @@ import { generateNextEmployeeId } from "@/lib/hr/generate-employee-id";
 import { hashToken } from "@/lib/secret-crypto";
 import { PASSWORD_ZOD_SCHEMA, passwordIdentityIssue } from "@/lib/utils/password-validation";
 import { ACCOUNT_EXISTS_MESSAGE, findAccountByEmail, revokePendingInvitations } from "@/lib/org/email-identity";
+import { afterResponse } from "@/lib/after-response";
+import { notifyHireJoined } from "@/lib/hr/notify-hire-joined";
 
 const schema = z.object({
   token: z.string(),
@@ -112,5 +114,7 @@ export async function POST(req: NextRequest) {
   });
 
   logger.info("Auth: invitation accepted", { email: invitation.email, orgId: invitation.orgId });
+  // The invite path told nobody that the person joined (EMAIL-AUDIT: Members-invite admin notify).
+  afterResponse("auth/accept-invitation:joined", () => notifyHireJoined(userId));
   return ok({ success: true });
 }
