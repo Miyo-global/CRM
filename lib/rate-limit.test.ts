@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkRateLimitShared, isSuspiciousBot, resolveTier, type CounterStore } from "./rate-limit";
+import { checkRateLimitShared, isSuspiciousBot, rateLimitHeaders, resolveTier, type CounterStore } from "./rate-limit";
 
 function memoryStore(): CounterStore {
   const m = new Map<string, unknown>();
@@ -28,7 +28,18 @@ describe("checkRateLimitShared (SEC-0003)", () => {
     const store = memoryStore();
     for (let i = 0; i < 10; i++) await checkRateLimitShared(store, "login", "ip", 0);
     const blocked = await checkRateLimitShared(store, "login", "ip", 0);
-    expect(blocked).toEqual({ allowed: false, retryAfterSecs: 60 });
+    expect(blocked).toMatchObject({ allowed: false, retryAfterSecs: 60, remaining: 0 });
+  });
+
+  it("reports limit/remaining/reset as X-RateLimit headers", async () => {
+    const store = memoryStore();
+    const r = await checkRateLimitShared(store, "login", "ip", 1_000);
+    expect(rateLimitHeaders(r!)).toEqual({
+      "X-RateLimit-Limit": "10",
+      "X-RateLimit-Remaining": "9",
+      "X-RateLimit-Reset": "60",
+    });
+    expect(rateLimitHeaders({ allowed: true, retryAfterSecs: 0 })).toEqual({});
   });
 
   it("returns null when the store is unreachable", async () => {

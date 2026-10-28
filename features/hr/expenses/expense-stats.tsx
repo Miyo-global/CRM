@@ -42,13 +42,14 @@ interface MemberExpenseStatsProps {
 }
 
 export function MemberExpenseStats({ stats }: MemberExpenseStatsProps) {
-  const totalReimbursed = (stats?.approvedAmount || 0) + (stats?.paidAmount || 0);
+  // Paid this calendar year / rejected in the last 30 days (IST), computed on
+  // the server — all-time approved+paid and all-time rejected didn't match the labels.
   return (
     <StatsStrip
       items={[
-        { label: "Total Reimbursed (YTD)", value: <Amount value={totalReimbursed} />, icon: IndianRupee, tone: "success" },
+        { label: "Total Reimbursed (YTD)", value: <Amount value={stats?.reimbursedYtdAmount || 0} />, icon: IndianRupee, tone: "success" },
         { label: "Pending Approval", value: <Amount value={stats?.pendingAmount || 0} />, icon: Clock, tone: "warning" },
-        { label: "Rejected (30d)", value: <Amount value={stats?.rejectedAmount || 0} />, icon: XCircle, tone: "danger" },
+        { label: "Rejected (30d)", value: <Amount value={stats?.rejected30dAmount || 0} />, icon: XCircle, tone: "danger" },
       ]}
     />
   );

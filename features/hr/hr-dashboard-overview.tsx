@@ -471,6 +471,7 @@ function LeaveAnalyticsWidget() {
                   </div>
                   <Badge variant="secondary" className="text-2xs tabular-nums shrink-0">
                     {d.approved} approved, {d.pending} pending
+                    {d.total - d.approved - d.pending > 0 && `, ${d.total - d.approved - d.pending} other`}
                   </Badge>
                 </div>
               ))}

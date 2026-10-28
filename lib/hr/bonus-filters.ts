@@ -7,6 +7,7 @@ export interface BonusRow {
   employeeName: string | null;
   /** False for a terminated employee: flagged so HR settles it through F&F. */
   employeeActive?: boolean | null;
+  employeeCode?: string | null;
   amount: string;
   type: string | null;
   reason: string | null;
@@ -84,6 +85,7 @@ export function applyBonusFilters(bonuses: BonusRow[], filters: BonusListFilters
     const typeLabel = bonus.type ? (BONUS_TYPE_LABELS[bonus.type as BonusType] ?? bonus.type) : "";
     const haystack = [
       bonus.employeeName,
+      bonus.employeeCode,
       bonus.reason,
       bonus.type,
       typeLabel,

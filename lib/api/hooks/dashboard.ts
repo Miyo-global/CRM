@@ -370,6 +370,14 @@ export const useAnnouncements = (
     ...options,
   });
 
+/** Announcements whose expiry has passed (archive tab on /dashboard/announcements). */
+export const useExpiredAnnouncements = () =>
+  useQuery<Announcement[], Error>({
+    queryKey: [...queryKeys.dashboard.announcements(), "expired"],
+    queryFn: () => apiClient.get<Announcement[]>("/dashboard/announcements", { expired: "true" }),
+    staleTime: 60_000,
+  });
+
 export const useCreateAnnouncement = () => {
   const qc = useQueryClient();
   return useMutation({

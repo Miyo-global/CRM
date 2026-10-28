@@ -430,6 +430,7 @@ export interface WorkLog {
     firstName: string | null;
     lastName: string | null;
     name: string | null;
+    employeeId?: string | null;
   } | null;
 }
 

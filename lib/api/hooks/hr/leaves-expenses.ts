@@ -311,6 +311,8 @@ export function useExpensePageData(filters: ExpensePageFilters = {}) {
           approvedTodayAmount: number;
           rejectedTodayAmount: number;
           claimedMonthAmount: number;
+          reimbursedYtdAmount: number;
+          rejected30dAmount: number;
         } | null;
         categories: Array<{
           id: number;

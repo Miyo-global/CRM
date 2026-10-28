@@ -132,7 +132,7 @@ function checkRateLimitInMemory(tierName: string, ip: string): RateLimitResult {
   if (!entry) {
     entry = { timestamps: [now], blockedUntil: 0, currentBlockMs: 0 };
     store.set(key, entry);
-    return { allowed: true, retryAfterSecs: 0 };
+    return { allowed: true, retryAfterSecs: 0, limit: tier.maxRequests, remaining: tier.maxRequests - 1, resetAt: now + tier.windowMs };
   }
 
   if (now < entry.blockedUntil) {
@@ -143,7 +143,7 @@ function checkRateLimitInMemory(tierName: string, ip: string): RateLimitResult {
       entry.blockedUntil = now + nextBlock;
     }
     const retryAfterSecs = Math.ceil((entry.blockedUntil - now) / 1000);
-    return { allowed: false, retryAfterSecs };
+    return { allowed: false, retryAfterSecs, limit: tier.maxRequests, remaining: 0, resetAt: entry.blockedUntil };
   }
 
   const windowStart = now - tier.windowMs;
@@ -156,23 +156,44 @@ function checkRateLimitInMemory(tierName: string, ip: string): RateLimitResult {
         : tier.windowMs;
       entry.currentBlockMs = blockMs;
       entry.blockedUntil = now + blockMs;
-      return { allowed: false, retryAfterSecs: Math.ceil(blockMs / 1000) };
+      return { allowed: false, retryAfterSecs: Math.ceil(blockMs / 1000), limit: tier.maxRequests, remaining: 0, resetAt: entry.blockedUntil };
     }
     const oldestInWindow = entry.timestamps[0];
     const retryAfterSecs = Math.max(1, Math.ceil((oldestInWindow + tier.windowMs - now) / 1000));
-    return { allowed: false, retryAfterSecs };
+    return { allowed: false, retryAfterSecs, limit: tier.maxRequests, remaining: 0, resetAt: now + retryAfterSecs * 1000 };
   }
 
   entry.timestamps.push(now);
   if (entry.currentBlockMs > 0 && entry.timestamps.length <= tier.maxRequests / 2) {
     entry.currentBlockMs = 0;
   }
-  return { allowed: true, retryAfterSecs: 0 };
+  return {
+    allowed: true,
+    retryAfterSecs: 0,
+    limit: tier.maxRequests,
+    remaining: tier.maxRequests - entry.timestamps.length,
+    resetAt: entry.timestamps[0] + tier.windowMs,
+  };
 }
 
 export interface RateLimitResult {
   allowed: boolean;
   retryAfterSecs: number;
+  /** Set when a tier applied; feed to rateLimitHeaders. */
+  limit?: number;
+  remaining?: number;
+  /** Epoch ms when the budget refills (or the block lifts). */
+  resetAt?: number;
+}
+
+/** X-RateLimit-* response headers for a limiter result (Reset in epoch seconds). */
+export function rateLimitHeaders(r: RateLimitResult): Record<string, string> {
+  if (r.limit == null || r.remaining == null || r.resetAt == null) return {};
+  return {
+    "X-RateLimit-Limit": String(r.limit),
+    "X-RateLimit-Remaining": String(Math.max(0, r.remaining)),
+    "X-RateLimit-Reset": String(Math.ceil(r.resetAt / 1000)),
+  };
 }
 
 /** Minimal store surface the shared limiter needs (lib/redis satisfies it). */
@@ -202,7 +223,7 @@ export async function checkRateLimitShared(
   const blockKey = `rl:block:${tierName}:${ip}`;
   const blockedUntil = await store.get<number>(blockKey);
   if (blockedUntil && blockedUntil > now) {
-    return { allowed: false, retryAfterSecs: Math.ceil((blockedUntil - now) / 1000) };
+    return { allowed: false, retryAfterSecs: Math.ceil((blockedUntil - now) / 1000), limit: tier.maxRequests, remaining: 0, resetAt: blockedUntil };
   }
 
   const windowSecs = Math.ceil(tier.windowMs / 1000);
@@ -211,7 +232,9 @@ export async function checkRateLimitShared(
   const count = await store.incr(countKey);
   if (count === 0) return null;
   if (count === 1) await store.expire(countKey, windowSecs);
-  if (count <= tier.maxRequests) return { allowed: true, retryAfterSecs: 0 };
+  const windowEnd = (windowIndex + 1) * tier.windowMs;
+  const meta = { limit: tier.maxRequests, remaining: Math.max(0, tier.maxRequests - count), resetAt: windowEnd };
+  if (count <= tier.maxRequests) return { allowed: true, retryAfterSecs: 0, ...meta };
 
   if (tier.progressive) {
     const maxBlock = tier.maxBlockMs ?? 30 * 60_000;
@@ -220,10 +243,9 @@ export async function checkRateLimitShared(
     await store.expire(strikesKey, Math.ceil(maxBlock / 1000) * 2);
     const blockMs = Math.min(tier.windowMs * 2 ** (strikes - 1), maxBlock);
     await store.set(blockKey, now + blockMs, { ex: Math.ceil(blockMs / 1000) });
-    return { allowed: false, retryAfterSecs: Math.ceil(blockMs / 1000) };
+    return { allowed: false, retryAfterSecs: Math.ceil(blockMs / 1000), ...meta, resetAt: now + blockMs };
   }
-  const windowEnd = (windowIndex + 1) * tier.windowMs;
-  return { allowed: false, retryAfterSecs: Math.max(1, Math.ceil((windowEnd - now) / 1000)) };
+  return { allowed: false, retryAfterSecs: Math.max(1, Math.ceil((windowEnd - now) / 1000)), ...meta };
 }
 
 export async function checkRateLimit(

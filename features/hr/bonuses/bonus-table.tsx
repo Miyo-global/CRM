@@ -68,11 +68,12 @@ export function BonusTable({
     <Card className="gap-0 overflow-hidden py-0">
       <CardContent className="p-0">
         <ScrollArea className="w-full" type="auto">
-          <div className="min-w-[760px]">
+          <div className="min-w-[840px]">
             <Table>
               <TableHeader className="sticky top-0 z-sticky bg-card">
                 <TableRow>
                   <TableHead>Employee</TableHead>
+                  <TableHead>Emp ID</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   <TableHead>Status</TableHead>
@@ -84,7 +85,7 @@ export function BonusTable({
               <TableBody>
                 {paginatedRows.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="p-4">
+                    <TableCell colSpan={8} className="p-4">
                       <EmptyState
                         compact
                         className="border-0 bg-transparent"
@@ -105,6 +106,7 @@ export function BonusTable({
                           </StatusPill>
                         )}
                       </TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">{bonus.employeeCode || "—"}</TableCell>
                       <TableCell>
                         <Badge variant="outline">
                           {bonus.type ? (BONUS_TYPE_LABELS[bonus.type as BonusType] ?? bonus.type) : "Bonus"}
