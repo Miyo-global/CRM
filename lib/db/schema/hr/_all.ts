@@ -1,6 +1,6 @@
 
-import { pgTable, text, serial, timestamp, boolean, jsonb, decimal, date, integer, doublePrecision, index, uniqueIndex } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { pgTable, text, serial, timestamp, boolean, jsonb, decimal, date, integer, doublePrecision, index, uniqueIndex, time, check } from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
 import {
   leaveStatusEnum, payrollStatusEnum, expenseStatusEnum, assetStatusEnum,
   documentTypeEnum, reviewStatusEnum, ticketPriorityEnum, ticketStatusEnum,
@@ -1150,6 +1150,38 @@ export const holidays = pgTable("holidays", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+// INFO-shifts-rosters-not-in-build (0198). Display only: attendance does not read these.
+export const shifts = pgTable("shifts", {
+  id: serial("id").primaryKey(),
+  orgId: text("org_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  name: text("name").notNull(),
+  startTime: time("start_time").notNull(),
+  endTime: time("end_time").notNull(),
+  /** 0 = Sunday … 6 = Saturday. */
+  daysOfWeek: integer("days_of_week").array().notNull().default(sql`'{1,2,3,4,5}'`),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_shifts_org").on(table.orgId),
+  check("chk_shifts_days_of_week", sql`${table.daysOfWeek} <@ '{0,1,2,3,4,5,6}'::integer[]`),
+]);
+
+export const shiftAssignments = pgTable("shift_assignments", {
+  id: serial("id").primaryKey(),
+  orgId: text("org_id").references(() => organizations.id, { onDelete: "cascade" }).notNull(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  shiftId: integer("shift_id").references(() => shifts.id, { onDelete: "cascade" }).notNull(),
+  effectiveFrom: date("effective_from").notNull(),
+  /** NULL = open-ended. */
+  effectiveTo: date("effective_to"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_shift_assignments_org_user").on(table.orgId, table.userId),
+  index("idx_shift_assignments_shift").on(table.shiftId),
+  check("chk_shift_assignments_range", sql`${table.effectiveTo} IS NULL OR ${table.effectiveTo} >= ${table.effectiveFrom}`),
+]);
 
 export const wfhRequests = pgTable("wfh_requests", {
   id: serial("id").primaryKey(),
