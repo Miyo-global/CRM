@@ -9,6 +9,7 @@ import { createAuditLog, requestIp } from "@/lib/audit-log";
 import { invalidateUserSession, revokeAllUserSessions } from "@/lib/auth";
 import { getTodayString } from "@/lib/date-utils";
 import { startOnboardingForUser } from "@/lib/hr/start-onboarding";
+import { completeAccountActivationTasks } from "@/lib/hr/onboarding-auto-complete";
 import { logger } from "@/lib/logger";
 
 const setActiveSchema = z.object({
@@ -122,6 +123,8 @@ export async function PATCH(
       await invalidateUserSession(targetUserId);
       // The re-hire is saved; a checklist failure is logged, HR can initiate it by hand.
       const checklistStarted = await startOnboardingForUser({ orgId: session.orgId, userId: targetUserId, joiningDate: getTodayString() })
+        // A re-hire keeps their password and their portal access is back on.
+        .then(() => completeAccountActivationTasks(targetUserId))
         .then(() => true)
         .catch((e: unknown) => {
           logger.error("Re-hire onboarding checklist failed", { userId: targetUserId, error: e instanceof Error ? e.message : e });

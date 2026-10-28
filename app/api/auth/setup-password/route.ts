@@ -7,6 +7,8 @@ import bcrypt from "bcryptjs";
 import { PASSWORD_ZOD_SCHEMA, passwordIdentityIssue } from "@/lib/utils/password-validation";
 import { revokeAllUserSessions } from "@/lib/auth";
 import type { NextRequest } from "next/server";
+import { afterResponse } from "@/lib/after-response";
+import { completeAccountActivationTasks } from "@/lib/hr/onboarding-auto-complete";
 
 const schema = z.object({
   password: PASSWORD_ZOD_SCHEMA,
@@ -37,6 +39,9 @@ export async function POST(req: NextRequest) {
       .where(eq(users.id, session.user.id));
 
     await revokeAllUserSessions(session.user.id, { exceptSessionId: session.sessionId });
+    // Forced first password set: the account is live, tick the checklist's activation item(s).
+    const userId = session.user.id;
+    afterResponse("auth/setup-password:onboarding", () => completeAccountActivationTasks(userId));
 
     return ok({ success: true });
   });

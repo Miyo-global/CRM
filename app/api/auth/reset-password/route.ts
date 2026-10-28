@@ -12,6 +12,7 @@ import { hashToken } from "@/lib/secret-crypto";
 import { PASSWORD_ZOD_SCHEMA, passwordIdentityIssue } from "@/lib/utils/password-validation";
 import { afterResponse } from "@/lib/after-response";
 import { notifyHireJoined } from "@/lib/hr/notify-hire-joined";
+import { completeAccountActivationTasks } from "@/lib/hr/onboarding-auto-complete";
 
 const schema = z.object({
   token: z.string(),
@@ -83,6 +84,8 @@ export async function POST(req: NextRequest) {
     // First password on an unverified account = a new hire finishing set-up.
     if (!owner.emailVerified) {
       afterResponse("auth/reset-password:hire-joined", () => notifyHireJoined(userId));
+      // The account is live: tick the checklist's activation item(s).
+      afterResponse("auth/reset-password:onboarding", () => completeAccountActivationTasks(userId));
     }
   }
 
