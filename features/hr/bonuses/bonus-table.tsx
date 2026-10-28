@@ -97,7 +97,14 @@ export function BonusTable({
                 ) : (
                   paginatedRows.map((bonus) => (
                     <TableRow key={bonus.id}>
-                      <TableCell className="font-medium">{bonus.employeeName ?? "Employee"}</TableCell>
+                      <TableCell className="font-medium">
+                        {bonus.employeeName ?? "Employee"}
+                        {bonus.employeeActive === false && (
+                          <StatusPill tone="danger" className="ml-2">
+                            Terminated
+                          </StatusPill>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline">
                           {bonus.type ? (BONUS_TYPE_LABELS[bonus.type as BonusType] ?? bonus.type) : "Bonus"}

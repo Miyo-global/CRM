@@ -15,7 +15,7 @@ export interface Reimbursement {
   approvedBy: string | null;
   rejectionReason: string | null;
   createdAt: Date | string | null;
-  user?: { id: string; name: string | null; email: string } | null;
+  user?: { id: string; name: string | null; email: string; isActive?: boolean | null } | null;
 }
 
 const reimbursementKeys = {

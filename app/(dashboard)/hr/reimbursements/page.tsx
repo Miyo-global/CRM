@@ -142,7 +142,13 @@ export default function ReimbursementsPage() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{r.category}</p>
+                        <p className="truncate text-sm font-medium">
+                          {r.category}
+                          {/* Owed to a leaver: settles through Full & Final. */}
+                          {r.user?.isActive === false && (
+                            <StatusPill tone="danger" className="ml-2">Terminated</StatusPill>
+                          )}
+                        </p>
                         <p className="max-w-64 truncate text-xs text-muted-foreground" title={r.description ?? undefined}>
                           {[r.user?.name, r.description].filter(Boolean).join(" · ") || "—"}
                         </p>

@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
         id: bonuses.id,
         userId: bonuses.userId,
         employeeName: users.name,
+        employeeActive: users.isActive,
         amount: bonuses.amount,
         type: bonuses.type,
         reason: bonuses.reason,

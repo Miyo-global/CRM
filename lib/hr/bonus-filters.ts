@@ -5,6 +5,8 @@ export interface BonusRow {
   id: number;
   userId: string;
   employeeName: string | null;
+  /** False for a terminated employee: flagged so HR settles it through F&F. */
+  employeeActive?: boolean | null;
   amount: string;
   type: string | null;
   reason: string | null;
