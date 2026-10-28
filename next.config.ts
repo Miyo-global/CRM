@@ -75,6 +75,8 @@ const nextConfig: NextConfig = {
       // Team monitor is a tab of /hr/attendance; /hr/team-schedule is the dashboard's Team schedule.
       { source: "/hr/attendance/team", destination: "/hr/attendance?tab=team", permanent: false },
       { source: "/hr/team-schedule", destination: "/hr/attendance", permanent: false },
+      // New hires are created in the onboarding wizard.
+      { source: "/hr/employees/new", destination: "/hr/onboarding", permanent: false },
       // --- end QA cluster C ---
     ];
   },
