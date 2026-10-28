@@ -18,7 +18,8 @@ export async function GET(_req: NextRequest) {
       })
       .from(onboardingTasks)
       .leftJoin(users, eq(onboardingTasks.userId, users.id))
-      .where(eq(onboardingTasks.orgId, session.orgId))
+      // A terminated person's checklist is closed: keep it off the workflow.
+      .where(and(eq(onboardingTasks.orgId, session.orgId), sql`${users.isActive} IS DISTINCT FROM false`))
       .groupBy(onboardingTasks.userId, users.name);
 
     const result = rows.map((r) => ({
@@ -60,9 +61,12 @@ export async function POST(req: NextRequest) {
     }
 
     const [targetUser] = await db
-      .select({ id: users.id, joiningDate: users.joiningDate })
+      .select({ id: users.id, joiningDate: users.joiningDate, isActive: users.isActive })
       .from(users)
       .where(eq(users.id, body.userId));
+    if (targetUser?.isActive === false) {
+      return err("This employee is terminated or inactive. Onboarding cannot be started.", 400);
+    }
 
     const result = await startOnboardingForUser({
       orgId: session.orgId,
