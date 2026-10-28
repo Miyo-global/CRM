@@ -43,6 +43,10 @@ export interface ExpenseStats {
   rejectedCount: number;
   paidCount: number;
   avgExpenseAmount: number;
+  /** KPI tiles, filled by /api/hr/expenses/page-data (lib/hr/expense-kpi). */
+  approvedTodayAmount?: number;
+  rejectedTodayAmount?: number;
+  claimedMonthAmount?: number;
 }
 
 export interface ExpenseCategory {
