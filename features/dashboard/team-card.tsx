@@ -9,7 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { resolveImageUrl } from "@/lib/utils";
-import { getInitials, formatTime } from "@/lib/format-utils";
+import { getInitials } from "@/lib/format-utils";
+import { formatISTTime } from "@/lib/date-utils";
 import { getColorSafe, onlineStatusColors } from "@/lib/theme-constants";
 
 const MAX_ROWS = 6;
@@ -85,12 +86,12 @@ export const TeamCard = memo(function TeamCard({ members, isLoading }: TeamCardP
                         member.isOnline ? (
                           <span className="inline-flex items-center gap-1 tabular-nums">
                             <Clock className="size-3" aria-hidden="true" />
-                            Checked in at {formatTime(member.checkIn)}
+                            Checked in at {formatISTTime(member.checkIn)}
                           </span>
                         ) : member.checkOut ? (
                           <span className="inline-flex items-center gap-1 tabular-nums">
                             <LogOut className="size-3" aria-hidden="true" />
-                            Checked out at {formatTime(member.checkOut)}
+                            Checked out at {formatISTTime(member.checkOut)}
                           </span>
                         ) : (
                           "Offline"

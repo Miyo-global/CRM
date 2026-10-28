@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState, useCallback, useEffect, type ReactNode } from "react";
-import { format } from "date-fns";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -40,7 +39,7 @@ import { QueryErrorState } from "@/components/ui/query-error-state";
 import { DataTablePagination } from "@/components/shared/data-table-pagination";
 import { useAttendanceMonitor, type AttendanceMonitorEntry } from "@/lib/api/hooks/hr/attendance";
 import { cn } from "@/lib/utils";
-import { getTodayString } from "@/lib/date-utils";
+import { formatISTTime, getTodayString } from "@/lib/date-utils";
 import { type PageSizeOption } from "@/lib/pagination-constants";
 
 const TEAM_PAGE_SIZE = 10 as PageSizeOption;
@@ -120,13 +119,9 @@ function buildCounts(all: AttendanceMonitorEntry[]) {
   };
 }
 
+/** Org timezone, like History; the browser's own zone put them 9h30m apart. */
 function fmtTime(ts: string | null | undefined): string {
-  if (!ts) return "";
-  try {
-    return format(new Date(ts), "hh:mm a");
-  } catch {
-    return "";
-  }
+  return formatISTTime(ts);
 }
 
 function todayIso(): string {
