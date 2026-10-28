@@ -31,3 +31,4 @@ export * from "./document-assignments";
 export * from "./org-document-variables";
 export * from "./payroll-extended";
 export * from "./letter-templates";
+export * from "./shifts";

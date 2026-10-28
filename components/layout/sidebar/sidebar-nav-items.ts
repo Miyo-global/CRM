@@ -1,6 +1,6 @@
 
 
-import { LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays, Receipt, FileText, Timer, QrCode, BarChart3, UserCheck, Network, ClipboardList, Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, TrendingUp, BookOpen, Heart, UserMinus, Package, Bell, PackageMinus, Gift, Award, MailOpen, FileCheck, Coins, Map, Zap, ListChecks, History, BarChart2, LifeBuoy, Inbox, Building2, UserCog, UserX, Activity, Sparkles, Brain, Search, ShieldAlert, CalendarRange, LayoutTemplate, Grid3X3, UserPlus, Library, ArrowDownUp } from "lucide-react";
+import { CalendarClock, LayoutDashboard, Users, Briefcase, Settings, Clock, CalendarCheck, CalendarDays, Receipt, FileText, Timer, QrCode, BarChart3, UserCheck, Network, ClipboardList, Shield, ShieldCheck, CreditCard, Wallet, Star, HeadphonesIcon, TrendingUp, BookOpen, Heart, UserMinus, Package, Bell, PackageMinus, Gift, Award, MailOpen, FileCheck, Coins, Map, Zap, ListChecks, History, BarChart2, LifeBuoy, Inbox, Building2, UserCog, UserX, Activity, Sparkles, Brain, Search, ShieldAlert, CalendarRange, LayoutTemplate, Grid3X3, UserPlus, Library, ArrowDownUp } from "lucide-react";
 
 import { AI_MODULE_ENABLED, ATS_MODULE_ENABLED } from "@/lib/constants/modules";
 import { ROLE_DEFAULT_PERMISSIONS } from "@/lib/rbac/permissions";
@@ -125,6 +125,7 @@ function roleNavGroups(role: string): NavGroup[] {
           label: "HR – Operations",
           routes: [
             { label: "Attendance", icon: Clock, href: "/hr/attendance" },
+            { label: "Shifts", icon: CalendarClock, href: "/hr/shifts", isSubItem: true },
             { label: "Leaves", icon: CalendarCheck, href: "/hr/leaves", badge: "leaves" },
             { label: "Leave policy", icon: BookOpen, href: "/hr/leaves/policies", isSubItem: true },
             { label: "Payroll", icon: CreditCard, href: "/hr/payroll" },
@@ -273,6 +274,7 @@ function roleNavGroups(role: string): NavGroup[] {
           label: "HR – Operations",
           routes: [
             { label: "Attendance", icon: Clock, href: "/hr/attendance" },
+            { label: "Shifts", icon: CalendarClock, href: "/hr/shifts", isSubItem: true },
             { label: "Leaves", icon: CalendarCheck, href: "/hr/leaves", badge: "leaves" },
             { label: "Leave policy", icon: BookOpen, href: "/hr/leaves/policies", isSubItem: true },
             { label: "Payroll", icon: CreditCard, href: "/hr/payroll" },
