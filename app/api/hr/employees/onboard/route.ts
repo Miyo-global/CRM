@@ -1,4 +1,4 @@
-import { withRoles, ok, err, parseBody } from "@/lib/api/helpers";
+import { withRoles, ok, err, parseBody, isUniqueViolation } from "@/lib/api/helpers";
 import { ONBOARDING_MUTATE_ROLES } from "@/lib/constants/roles";
 import { startOnboardingForUser } from "@/lib/hr/start-onboarding";
 import { db } from "@/lib/db";
@@ -139,6 +139,8 @@ export async function POST(req: NextRequest) {
     let employeeId: string | null = null;
 
     let revokedInvitations = 0;
+    // uq_users_employee_id (0199) / users.email are the last word if a racing
+    // write slipped past the checks above: answer 409, not a 500.
     const newUser = await db.transaction(async (tx) => {
       // Pick or check the ID under a lock so concurrent hires can't share one.
       await lockEmployeeIdAllocation(tx);
@@ -217,7 +219,11 @@ export async function POST(req: NextRequest) {
       }
 
       return u;
+    }).catch((e: unknown) => {
+      if (isUniqueViolation(e)) return "conflict" as const;
+      throw e;
     });
+    if (newUser === "conflict") return err("This employee ID or email is already in use.", 409);
     if (!newUser) return err("This employee ID is already in use.", 409);
 
     afterResponse("hr/employees/onboard", () => notifyByRoles(session.orgId, ONBOARDED_NOTIFY_ROLES, {
