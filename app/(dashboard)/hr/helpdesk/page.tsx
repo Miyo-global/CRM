@@ -171,6 +171,15 @@ export default function HelpdeskPage() {
     [searchParams, router]
   );
 
+  // Closing (or creating) drops ?new=1 so a reload doesn't reopen the sheet.
+  const changeSheetOpen = useCallback(
+    (open: boolean) => {
+      setSheetOpen(open);
+      if (!open && searchParams.get("new")) setFilter("new", null);
+    },
+    [searchParams, setFilter],
+  );
+
   const clearFilters = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("q");
@@ -227,13 +236,13 @@ export default function HelpdeskPage() {
         {
           onSuccess: () => {
             toast.success("Ticket created successfully");
-            setSheetOpen(false);
+            changeSheetOpen(false);
           },
           onError: (error) => toast.error(getErrorMessage(error)),
         },
       );
     },
-    [createTicket, tickets],
+    [createTicket, tickets, changeSheetOpen],
   );
 
   if (isLoading) {
@@ -257,7 +266,7 @@ export default function HelpdeskPage() {
       subtitle={helpdeskSubtitle(isSupportStaff(session?.user?.role))}
       badge={`${stats.total} tickets`}
       actions={
-        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <Sheet open={sheetOpen} onOpenChange={changeSheetOpen}>
           <SheetTrigger asChild>
             <Button>
               <Plus className="size-4" aria-hidden="true" />
@@ -277,7 +286,7 @@ export default function HelpdeskPage() {
               />
             </SheetScrollArea>
             <SheetFooter className="shrink-0 flex-row gap-2 border-t bg-background px-4 py-3">
-              <Button variant="outline" className="flex-1" onClick={() => setSheetOpen(false)}>
+              <Button variant="outline" className="flex-1" onClick={() => changeSheetOpen(false)}>
                 Cancel
               </Button>
               <Button
