@@ -14,7 +14,7 @@ vi.mock("@/lib/auth", () => ({ auth: async () => null, revokeAllUserSessions: as
 vi.mock("@/lib/email", () => ({ sendInvitationEmail: async () => undefined }));
 vi.mock("@/lib/audit-log", () => ({ createAuditLog: async () => undefined }));
 vi.mock("@/lib/auth/role-assignment", () => ({ checkRoleAssignment: async () => null }));
-vi.mock("@/lib/hr/generate-employee-id", () => ({ generateNextEmployeeId: async () => "E1" }));
+vi.mock("@/lib/hr/generate-employee-id", () => ({ generateNextEmployeeId: async () => "E1", lockEmployeeIdAllocation: async () => {} }));
 vi.mock("@/lib/db", () => ({
   db: {
     query: {

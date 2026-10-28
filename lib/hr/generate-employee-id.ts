@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
-import { ilike } from "drizzle-orm";
+import { ilike, sql } from "drizzle-orm";
 import {
   AUTO_EMPLOYEE_ID_PREFIX,
   buildAutoEmployeeId,
@@ -16,11 +16,26 @@ export {
   parseAutoSequence,
 } from "@/lib/hr/employee-id-format";
 
-export async function generateNextEmployeeId(referenceDate: Date = new Date()): Promise<string> {
+type Executor = Parameters<Parameters<typeof db.transaction>[0]>[0] | typeof db;
+
+/**
+ * Serialises employee-ID allocation: take this inside the transaction that
+ * inserts the user, then pick/check the ID with that same tx. Without it two
+ * concurrent hires read the same max and both claim it (there is no unique
+ * index on users.employee_id).
+ */
+export async function lockEmployeeIdAllocation(tx: Executor): Promise<void> {
+  await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('users.employee_id'))`);
+}
+
+export async function generateNextEmployeeId(
+  referenceDate: Date = new Date(),
+  executor: Executor = db,
+): Promise<string> {
   const yy = yearSuffix(referenceDate);
   const prefix = `${AUTO_EMPLOYEE_ID_PREFIX}${yy}`;
 
-  const rows = await db
+  const rows = await executor
     .select({ employeeId: users.employeeId })
     .from(users)
     .where(ilike(users.employeeId, `${escapeLike(prefix)}%`));
@@ -36,7 +51,7 @@ export async function generateNextEmployeeId(referenceDate: Date = new Date()): 
     const candidate = buildAutoEmployeeId(referenceDate, maxSeq + 1 + attempt);
     const taken = rows.some((r) => r.employeeId?.toUpperCase() === candidate.toUpperCase());
     if (!taken) {
-      const global = await db.query.users.findFirst({
+      const global = await executor.query.users.findFirst({
         where: (u, { eq }) => eq(u.employeeId, candidate),
         columns: { id: true },
       });

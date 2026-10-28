@@ -11,7 +11,11 @@ import { invalidateHrDashboardCache } from "@/lib/hr-cache";
 import { createAuditLog } from "@/lib/audit-log";
 import { sendSetupLink } from "@/lib/hr/setup-link";
 import { formatDateOnly } from "@/lib/date-utils";
-import { generateNextEmployeeId, normalizeEmployeeIdInput } from "@/lib/hr/generate-employee-id";
+import {
+  generateNextEmployeeId,
+  lockEmployeeIdAllocation,
+  normalizeEmployeeIdInput,
+} from "@/lib/hr/generate-employee-id";
 import { onboardEmployeeInputSchema, isRoleAllowedForDepartment, DEPARTMENT_ROLE_MISMATCH_MESSAGE, checkMinMonthlySalary } from "@/lib/validations/hr";
 import { syncEmployeeSkillsFromProfile } from "@/lib/hr/sync-employee-skills";
 import { syncUserDepartmentMembership } from "@/server/queries/hr/department-membership";
@@ -131,21 +135,24 @@ export async function POST(req: NextRequest) {
       if (ptError) return err(ptError.message, ptError.status);
     }
 
-    let employeeId = normalizeEmployeeIdInput(body.employeeId);
-    if (!employeeId) {
-      employeeId = await generateNextEmployeeId(body.joiningDate ?? new Date());
-    } else {
-      const existingId = await db.query.users.findFirst({
-        where: (u, { eq }) => eq(u.employeeId, employeeId!),
-        columns: { id: true },
-      });
-      if (existingId) {
-        return err("This employee ID is already in use.", 409);
-      }
-    }
+    const requestedEmployeeId = normalizeEmployeeIdInput(body.employeeId);
+    let employeeId: string | null = null;
 
     let revokedInvitations = 0;
     const newUser = await db.transaction(async (tx) => {
+      // Pick or check the ID under a lock so concurrent hires can't share one.
+      await lockEmployeeIdAllocation(tx);
+      if (!requestedEmployeeId) {
+        employeeId = await generateNextEmployeeId(body.joiningDate ?? new Date(), tx);
+      } else {
+        const existingId = await tx.query.users.findFirst({
+          where: (u, { eq }) => eq(u.employeeId, requestedEmployeeId),
+          columns: { id: true },
+        });
+        if (existingId) return null;
+        employeeId = requestedEmployeeId;
+      }
+
       const [u] = await tx
         .insert(users)
         .values({
@@ -211,6 +218,7 @@ export async function POST(req: NextRequest) {
 
       return u;
     });
+    if (!newUser) return err("This employee ID is already in use.", 409);
 
     afterResponse("hr/employees/onboard", () => notifyByRoles(session.orgId, ONBOARDED_NOTIFY_ROLES, {
       type: "SUCCESS",
