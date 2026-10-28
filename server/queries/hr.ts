@@ -182,7 +182,8 @@ export async function getTerminatedEmployees(
       image: u.image,
       isActive: false,
       joiningDate: u.joiningDate,
-      hasDashboardAccess: u.hasDashboardAccess ?? false,
+      // A deactivated account has no portal access, whatever the stale flag says.
+      hasDashboardAccess: false,
       reportingTo: u.reportingTo,
       monthlySalary: u.monthlySalary,
       bio: u.bio ?? null,

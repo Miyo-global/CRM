@@ -604,7 +604,8 @@ export function EmployeeDetailsView({ employee }: { employee: EmployeeData }) {
                     <DetailRow
                       label="Portal access"
                       value={
-                        employee.hasDashboardAccess ? (
+                        // A deactivated account cannot sign in, whatever the stored flag says.
+                        employee.hasDashboardAccess && !isTerminated ? (
                           <StatusPill tone="success" dot>On</StatusPill>
                         ) : (
                           <StatusPill tone="neutral" dot>Off</StatusPill>
