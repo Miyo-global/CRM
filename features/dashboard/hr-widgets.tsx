@@ -218,7 +218,7 @@ export function TeamAttendanceWidget() {
   const { data, isLoading } = useTeamAttendance();
   const rate = data?.total ? Math.round((data.present / data.total) * 100) : 0;
   return (
-    <WidgetCard title="Team Attendance" icon={Users} tone="info">
+    <WidgetCard title="Team Attendance" icon={Users} tone="info" viewAllHref="/hr/attendance?tab=team" viewAllLabel="Open monitor">
       {isLoading ? <WidgetSkeleton rows={2} /> : !data ? <EmptyWidget message="No data." /> : (
         <div>
           <dl className="mb-3 grid grid-cols-4 gap-2 text-center">
