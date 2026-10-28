@@ -252,3 +252,24 @@ export const aiUsageLogs = pgTable("ai_usage_logs", {
   index("idx_ai_usage_org_created").on(table.orgId, table.createdAt),
   index("idx_ai_usage_user").on(table.userId),
 ]);
+
+/** Outbound email log (migration 0197). Written by lib/email/sender.ts; a
+ *  failed write never blocks the send. */
+export const EMAIL_DELIVERY_STATUSES = ["queued", "sent", "failed", "bounced"] as const;
+export type EmailDeliveryStatus = (typeof EMAIL_DELIVERY_STATUSES)[number];
+
+export const emailDeliveries = pgTable("email_deliveries", {
+  id: serial("id").primaryKey(),
+  orgId: text("org_id").references(() => organizations.id, { onDelete: "cascade" }),
+  toAddress: text("to_address").notNull(),
+  subject: text("subject").notNull(),
+  templateKey: text("template_key"),
+  status: text("status").$type<EmailDeliveryStatus>().notNull().default("queued"),
+  providerMessageId: text("provider_message_id"),
+  error: text("error"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_email_deliveries_org_created").on(table.orgId, table.createdAt),
+  index("idx_email_deliveries_provider_msg").on(table.providerMessageId),
+]);

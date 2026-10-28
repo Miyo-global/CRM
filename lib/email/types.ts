@@ -24,6 +24,11 @@ export interface EmailOptions {
    * anything the person must receive: a password reset, an offer, a payslip.
    */
   category?: import("./preference-rules").EmailCategory;
+  /** Workspace for the delivery log; looked up from the first recipient's
+   *  membership when omitted. */
+  orgId?: string;
+  /** email-templates/ id, recorded in the delivery log. */
+  templateKey?: string;
 }
 
 /** An `EmailOptions` after defaults, trimming and de-duplication have been

@@ -8,6 +8,7 @@ import {
   isEmailConfigured,
 } from "./config";
 import { sendViaZeptoMail } from "./providers/zeptomail";
+import { recordEmailQueued, recordEmailOutcome } from "./delivery-log";
 import { EmailSendError, type EmailOptions, type NormalizedEmail } from "./types";
 
 export type { EmailAttachment, EmailOptions } from "./types";
@@ -158,11 +159,21 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     return;
   }
 
+  // Delivery log (P2-no-outbound-email-delivery-audit); never throws.
+  const deliveryId = await recordEmailQueued({
+    to: email.to,
+    subject: email.subject,
+    orgId: options.orgId,
+    templateKey: options.templateKey,
+  });
+  const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       const result = await dispatch(email);
+      await recordEmailOutcome(deliveryId, { status: "sent", providerMessageId: result.requestId });
       logger.info("Email sent", {
         provider,
         to: email.to,
@@ -181,6 +192,7 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
           attempt,
           error: error instanceof Error ? error.message : error,
         });
+        await recordEmailOutcome(deliveryId, { status: "failed", error: errorText(error) });
         throw error;
       }
 
@@ -203,6 +215,7 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     subject: email.subject,
     error: lastError instanceof Error ? lastError.message : lastError,
   });
+  await recordEmailOutcome(deliveryId, { status: "failed", error: errorText(lastError) });
   throw lastError;
 }
 
@@ -220,5 +233,5 @@ export async function sendTemplateEmail(
   const { renderEmail } = await import("@/lib/email-templates/render");
   const { vars, ...rest } = options;
   const { subject, html, text } = renderEmail(id, vars);
-  await sendEmail({ ...rest, subject, html, text });
+  await sendEmail({ templateKey: id, ...rest, subject, html, text });
 }
