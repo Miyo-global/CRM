@@ -10,6 +10,7 @@ import { Adapter } from "next-auth/adapters";
 import { logger } from "../logger";
 import { redis } from "../redis";
 import { randomUUID } from "crypto";
+import { headers } from "next/headers";
 import { getDeviceId } from "../device-fingerprint";
 import { sendAccountLockedEmail, sendNewDeviceLoginEmail } from "../email";
 import { clearFailedAttempts, recordFailedAttempt } from "./failed-attempts";
@@ -333,12 +334,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const userAgent = "";
         const ipAddress = "";
+        // ponytail: deviceId stays the old constant fingerprint so this change
+        // does not mail every user a "new device" alert; fingerprint on the
+        // real UA once that email is wanted.
         const deviceId = getDeviceId(userAgent, ipAddress);
+        // Record the real browser and IP so Active sessions does not list
+        // every sign-in as "Unknown device" (QA P3 session-accumulation).
+        const reqHeaders = await Promise.resolve().then(() => headers()).catch(() => null);
 
         db.insert(userSessions).values({
           id: token.sessionId,
           userId: user.id as string,
           deviceId,
+          userAgent: reqHeaders?.get("user-agent") ?? null,
+          ipAddress: reqHeaders?.get("x-forwarded-for")?.split(",")[0].trim() ?? reqHeaders?.get("x-real-ip") ?? null,
         }).catch((e) => logger.error("Auth: userSessions insert failed", { userId: user.id, error: e }));
 
         createAuditLog({
@@ -428,6 +437,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               await redis.set(userSessionKey(userId), cacheValue, { ex: USER_SESSION_TTL });
             }
             dbUser = cacheValue;
+            // Cache misses come at most every USER_SESSION_TTL, so this keeps
+            // lastActive fresh enough for the Active sessions list.
+            if (token.sessionId && !user) {
+              db.update(userSessions)
+                .set({ lastActive: new Date() })
+                .where(eq(userSessions.id, token.sessionId as string))
+                .catch((e) => logger.error("Auth: userSessions lastActive update failed", { userId, error: e }));
+            }
           }
 
           if (dbUser) {

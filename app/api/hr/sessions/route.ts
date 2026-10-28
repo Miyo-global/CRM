@@ -2,7 +2,7 @@ import { type NextRequest } from "next/server";
 import { withAuth, ok } from "@/lib/api/helpers";
 import { db } from "@/lib/db";
 import { userSessions } from "@/lib/db/schema";
-import { eq, desc, and, ne } from "drizzle-orm";
+import { eq, desc, and, ne, gt } from "drizzle-orm";
 import { redis } from "@/lib/redis";
 
 const JWT_MAX_AGE_SECONDS = 8 * 60 * 60;
@@ -23,7 +23,14 @@ export async function GET(req: NextRequest) {
     }
 
     const sessions = await db.query.userSessions.findMany({
-      where: and(eq(userSessions.userId, session.user.id), eq(userSessions.isRevoked, false)),
+      // A JWT idle for longer than its max age has expired, so its row is not
+      // an active session any more; listing those let the list grow forever
+      // (QA P3 session-accumulation). DELETE below still revokes them all.
+      where: and(
+        eq(userSessions.userId, session.user.id),
+        eq(userSessions.isRevoked, false),
+        gt(userSessions.lastActive, new Date(Date.now() - JWT_MAX_AGE_SECONDS * 1000)),
+      ),
       orderBy: [desc(userSessions.lastActive)],
       columns: { id: true, userAgent: true, ipAddress: true, lastActive: true, createdAt: true },
     });
