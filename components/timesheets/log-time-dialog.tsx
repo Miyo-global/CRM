@@ -422,6 +422,9 @@ export function LogTimeDialog({ trigger, defaultOpen = false }: LogTimeDialogPro
             </ScrollArea>
 
             <SheetFooter>
+              <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
               <Button type="submit" className="w-full sm:w-auto" loading={mutation.isPending || uploading}>
                 Log Time
               </Button>
