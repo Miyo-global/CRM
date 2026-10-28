@@ -116,6 +116,11 @@ const nextConfig: NextConfig = {
       { source: "/bonuses", destination: "/hr/bonuses", permanent: false },
       { source: "/recognition", destination: "/hr/recognition", permanent: false },
       { source: "/hr/kudos", destination: "/hr/recognition", permanent: false },
+      // Own timesheets are /timesheets (P3-timesheets-nav-inconsistency).
+      { source: "/hr/timesheets", destination: "/timesheets", permanent: false },
+      { source: "/timesheets/my", destination: "/timesheets", permanent: false },
+      { source: "/my-timesheets", destination: "/timesheets", permanent: false },
+      { source: "/work-logs", destination: "/hr/work-logs", permanent: false },
       // --- end QA cluster C ---
     ];
   },
