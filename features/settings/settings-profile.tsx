@@ -13,6 +13,10 @@ import { toast } from "sonner";
 import { resolveImageUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { roleHasPermission } from "@/lib/auth/role-change-rules";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import { queryKeys } from "@/lib/query-keys";
+import type { Employee } from "@/types/hr";
 
 export function SettingsProfile() {
   const { data: session, update: updateSession } = useSession();
@@ -39,6 +43,15 @@ export function SettingsProfile() {
   // may edit employee records (the same permission PATCH /api/hr/employees/:id
   // enforces) gets the editor; everyone else sees it read-only.
   const canEditName = roleHasPermission(session?.user?.role, "hr:employees:update");
+  // QA P3-emp-self-profile-missing-empid: show the HR Emp ID read-only. The
+  // record endpoint returns the full record for self.
+  const userId = session?.user?.id;
+  const { data: ownRecord } = useQuery({
+    queryKey: queryKeys.hr.employee(userId ?? ""),
+    queryFn: () => apiClient.get<Employee>(`/hr/employees/${userId}`),
+    enabled: !!userId,
+    staleTime: 5 * 60_000,
+  });
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -322,6 +335,13 @@ export function SettingsProfile() {
             Contact your admin to change email.
           </p>
         </div>
+
+        {ownRecord?.employeeId ? (
+          <div className="space-y-1.5">
+            <Label htmlFor="employee-id-display" className="text-sm font-medium">Employee ID</Label>
+            <Input id="employee-id-display" value={ownRecord.employeeId} disabled className="bg-muted/40 font-mono" />
+          </div>
+        ) : null}
       </div>
 
       {cropImageSrc && (
