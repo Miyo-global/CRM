@@ -7,6 +7,7 @@ import { TimerCard } from "@/features/hr/attendance/check-in-button";
 import { AttendanceCalendar } from "@/features/hr/attendance/attendance-calendar";
 import { AttendanceHeatmap } from "@/features/hr/attendance/attendance-heatmap";
 import { DailyHistoryTable } from "@/features/hr/attendance/daily-history-table";
+import { MyShiftCard } from "@/features/hr/attendance/my-shift-card";
 import { HolidayWorkRequestCard } from "@/features/hr/attendance/holiday-work-request-card";
 import { TeamAttendanceMonitor } from "@/features/hr/attendance/team-attendance-monitor";
 import { useHrLeaveContext } from "@/lib/api/hooks/hr";
@@ -21,6 +22,7 @@ function MyAttendancePanels({ userId, isAdmin }: { userId: string; isAdmin: bool
 
   return (
     <div className="space-y-5 pb-6">
+      <MyShiftCard />
       <TimerCard />
       <AttendanceCalendar userId={userId} joiningDate={leaveContext?.joiningDate ?? null} />
       <HolidayWorkRequestCard isAdmin={isAdmin} />

@@ -128,6 +128,9 @@ const nextConfig: NextConfig = {
       // System email templates live under Settings.
       { source: "/email-templates", destination: "/settings/email-templates", permanent: false },
       // --- end QA cluster C ---
+      // --- QA round 2 cluster R3: rosters live on the Shifts page ---
+      { source: "/hr/rosters", destination: "/hr/shifts", permanent: false },
+      // --- end QA round 2 cluster R3 ---
     ];
   },
   experimental: {
