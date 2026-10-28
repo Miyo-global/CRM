@@ -347,7 +347,11 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
   const employeeName = formatEmployeeName(request);
 
   return (
-    <tr className="group border-b border-border transition-colors last:border-0 hover:bg-muted/40">
+    // Row click opens the details sheet; the kebab stays as the keyboard path.
+    <tr
+      className={`group border-b border-border transition-colors last:border-0 hover:bg-muted/40 ${onViewDetails ? "cursor-pointer" : ""}`}
+      onClick={onViewDetails}
+    >
       {showEmployee && (
         <td className="py-3.5 px-3">
           <div className="flex items-center gap-2.5 min-w-[140px]">
@@ -409,7 +413,8 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
           )}
         </div>
       </td>
-      <td className="py-3.5 px-3 text-right">
+      {/* Menu clicks bubble through the portal; keep them off the row. */}
+      <td className="py-3.5 px-3 text-right" onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon-sm" aria-label="Actions">
