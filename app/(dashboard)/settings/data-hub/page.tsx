@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { DashboardGate } from "@/components/shared/dashboard-gate";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
 import { getTodayString } from "@/lib/date-utils";
 
@@ -64,6 +65,8 @@ export default function DataHubPage() {
 
 function DataHubContent() {
   const [exportingIds, setExportingIds] = useState<Set<string>>(new Set());
+  // Every card dumps personal or salary data, so each download is confirmed.
+  const [confirmEntity, setConfirmEntity] = useState<ExportEntity | null>(null);
 
   const handleExport = useCallback(async (entity: ExportEntity) => {
     setExportingIds(prev => new Set([...prev, entity.id]));
@@ -129,7 +132,7 @@ function DataHubContent() {
                   variant="outline"
                   size="sm"
                   className="w-full"
-                  onClick={() => handleExport(entity)}
+                  onClick={() => setConfirmEntity(entity)}
                   disabled={isExporting}
                   loading={isExporting}
                 >
@@ -141,6 +144,19 @@ function DataHubContent() {
           );
         })}
       </div>
+      <ConfirmDialog
+        open={confirmEntity !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmEntity(null);
+        }}
+        title={`Export ${confirmEntity?.label.toLowerCase() ?? ""}?`}
+        description={`${confirmEntity?.description ?? ""} The file holds employee data; store and share it accordingly.`}
+        confirmLabel="Export"
+        onConfirm={() => {
+          if (confirmEntity) void handleExport(confirmEntity);
+          setConfirmEntity(null);
+        }}
+      />
     </PageWrapper>
   );
 }
