@@ -78,6 +78,10 @@ const nextConfig: NextConfig = {
       // New hires are created in the onboarding wizard.
       { source: "/hr/employees/new", destination: "/hr/onboarding", permanent: false },
       { source: "/hr/find-expert", destination: "/hr/employees/find-expert", permanent: false },
+      { source: "/find-expert", destination: "/hr/employees/find-expert", permanent: false },
+      { source: "/hr/experts", destination: "/hr/employees/find-expert", permanent: false },
+      { source: "/knowledge/find-expert", destination: "/hr/employees/find-expert", permanent: false },
+      { source: "/skills", destination: "/hr/skills", permanent: false },
       // Sidebar labels are Doc Types / Doc Review.
       { source: "/hr/doc-types", destination: "/hr/document-types", permanent: false },
       { source: "/hr/doc-review", destination: "/hr/document-review", permanent: false },
