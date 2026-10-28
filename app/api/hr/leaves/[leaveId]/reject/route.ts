@@ -4,6 +4,7 @@ import { leaveBalances, leaveRequests, leaveTypes, users } from "@/lib/db/schema
 import { eq, and } from "drizzle-orm";
 import { writeAuditLog } from "@/lib/db/audit";
 import { createNotification } from "@/server/actions/create-notification";
+import { resolveRequestNotifications } from "@/lib/notifications/resolve";
 import { sendLeaveStatusUpdateEmail } from "@/lib/email";
 import { canApproveLeaveRequest } from "@/lib/auth/leave-approval";
 import { z } from "zod";
@@ -65,6 +66,7 @@ export async function PUT(
         managerComment: comment ?? null,
       })
       .where(eq(leaveRequests.id, leaveId));
+    await resolveRequestNotifications(session.orgId, { kind: "leave", leaveId }, "Rejected");
 
     // The rejection mail states the balance that is still available (QA-0011).
     const balanceRow = existing.leaveTypeId

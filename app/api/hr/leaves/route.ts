@@ -272,7 +272,8 @@ export async function POST(req: NextRequest) {
             type: "WARNING",
             title: "Leave request pending",
             message: `${employeeName} requested ${leaveLabel} from ${startStr} to ${endStr}.`,
-            link: "/hr/leaves",
+            link: "/hr/leaves?tab=approvals",
+            metadata: { kind: "leave", leaveId: inserted },
           });
         } else {
           // Unowned (e.g. an Admin's leave with no Super Admin free): tell
@@ -281,7 +282,8 @@ export async function POST(req: NextRequest) {
             type: "WARNING",
             title: "Leave request pending",
             message: `${employeeName} requested ${leaveLabel} from ${startStr} to ${endStr}.`,
-            link: "/hr/leaves",
+            link: "/hr/leaves?tab=approvals",
+            metadata: { kind: "leave", leaveId: inserted },
             excludeUserId: session.user.id,
             // The one email already went to the HR inbox above (QA-0010).
             email: false,

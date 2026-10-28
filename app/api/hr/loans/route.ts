@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       type: "INFO",
       title: "Salary Loan Request",
       message: `${session.user.name ?? "An employee"} requested a salary loan of ${CURRENCY_SYMBOL}${body.amount.toLocaleString(DEFAULT_LOCALE)}.`,
-      link: "/hr/loans",
+      link: `/hr/loans?id=${loan.id}`,
       metadata: { loanId: loan.id },
       excludeUserId: session.user.id,
     }));

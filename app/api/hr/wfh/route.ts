@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
         type: "WARNING",
         title: "WFH request pending",
         message: `${employeeName} requested work from home on ${dateLabel}.`,
-        link: "/hr/leaves",
+        link: "/hr/leaves?tab=approvals",
         excludeUserId: session.user.id,
         metadata: { kind: "wfh", requestId: request.id },
       });

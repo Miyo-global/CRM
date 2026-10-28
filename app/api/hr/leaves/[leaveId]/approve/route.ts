@@ -4,6 +4,7 @@ import { leaveRequests, leaveBalances, leaveTypes, users } from "@/lib/db/schema
 import { eq, and } from "drizzle-orm";
 import { writeAuditLog } from "@/lib/db/audit";
 import { createNotification } from "@/server/actions/create-notification";
+import { resolveRequestNotifications } from "@/lib/notifications/resolve";
 import { sendLeaveStatusUpdateEmail } from "@/lib/email";
 import { canApproveLeaveRequest } from "@/lib/auth/leave-approval";
 import { deductApprovedLeaveBalance } from "@/lib/hr/deduct-leave-balance";
@@ -68,6 +69,7 @@ export async function PUT(
       lopDaysApplied = deduction.lopDays;
       balanceAfter = deduction.balanceAfter;
     });
+    await resolveRequestNotifications(session.orgId, { kind: "leave", leaveId }, "Approved");
     const employee = await db.query.users.findFirst({
       where: eq(users.id, existing.userId),
       columns: { email: true, name: true },
