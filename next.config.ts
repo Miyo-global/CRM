@@ -128,6 +128,9 @@ const nextConfig: NextConfig = {
       // System email templates live under Settings.
       { source: "/email-templates", destination: "/settings/email-templates", permanent: false },
       // --- end QA cluster C ---
+      // --- QA cluster R1 (admin config) ---
+      { source: "/hr/departments", destination: "/settings/departments", permanent: false },
+      // --- end QA cluster R1 ---
     ];
   },
   experimental: {

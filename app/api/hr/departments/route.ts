@@ -1,21 +1,29 @@
 import { withAuth, ok, err, parseBody } from "@/lib/api/helpers";
 import { getDepartments } from "@/server/queries/hr";
+import {
+  countMembersByDepartment,
+  departmentNameTaken,
+  isOrgMember,
+} from "@/server/queries/hr/department-membership";
 import { db } from "@/lib/db";
 import { departments } from "@/lib/db/schema";
-import { and, eq, sql } from "drizzle-orm";
 import { isAdminOrOwner } from "@/lib/auth/helpers";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { rejectDuplicateSubmit } from "@/lib/api/submit-guard";
 
 const postDepartmentSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().trim().min(1).max(100),
+  managerId: z.string().min(1).nullish(),
 });
 
 export async function GET() {
   return withAuth(async (session) => {
-    const data = await getDepartments(session.orgId);
-    return ok(data);
+    const [data, counts] = await Promise.all([
+      getDepartments(session.orgId),
+      countMembersByDepartment(session.orgId),
+    ]);
+    return ok(data.map((d) => ({ ...d, memberCount: counts.get(d.id) ?? 0 })));
   });
 }
 
@@ -29,15 +37,16 @@ export async function POST(req: NextRequest) {
     const dup = await rejectDuplicateSubmit("department", session.user.id, body);
     if (dup) return dup;
 
-    const name = body.name.trim();
-    const existing = await db.query.departments.findFirst({
-      where: and(eq(departments.orgId, session.orgId), sql`lower(${departments.name}) = ${name.toLowerCase()}`),
-      columns: { id: true },
-    });
-    if (existing) return err("A department with this name already exists.", 409);
+    if (await departmentNameTaken(session.orgId, body.name)) {
+      return err("A department with this name already exists.", 409);
+    }
+    if (body.managerId && !(await isOrgMember(session.orgId, body.managerId))) {
+      return err("Department head must be a member of this organization.", 400);
+    }
 
     await db.insert(departments).values({
-      name: body.name.trim(),
+      name: body.name,
+      managerId: body.managerId ?? null,
       orgId: session.orgId,
     });
 

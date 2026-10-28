@@ -27,6 +27,8 @@ export interface Department {
   name: string;
   managerId: string | null;
   createdAt: Date | string | null;
+  /** Distinct employees in the department (GET /api/hr/departments). */
+  memberCount?: number;
 }
 
 export interface Employee {
@@ -458,6 +460,13 @@ export interface PaginatedResult<T> {
 
 export interface CreateDepartmentInput {
   name: string;
+  managerId?: string | null;
+}
+
+export interface UpdateDepartmentInput {
+  id: number;
+  name?: string;
+  managerId?: string | null;
 }
 
 export interface UpdateProfileInput {
