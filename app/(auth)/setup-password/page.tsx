@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, Suspense } from "react";
 import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { useUrlToken } from "@/lib/hooks/use-url-token";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -61,6 +62,7 @@ type FormValues = z.infer<typeof setupSchema>;
 
 function SetupPasswordContent() {
   const router = useRouter();
+  const { data: session } = useSession();
   const token = useUrlToken() ?? "";
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -93,13 +95,17 @@ function SetupPasswordContent() {
         password: values.password,
       });
       toast.success("Password set successfully! You can now sign in.");
+      // Someone else signed in in this browser would otherwise be bounced
+      // from /signin back to their own dashboard (QA P1 setup-password).
+      if (session) await signOut({ redirect: false });
       router.push("/signin");
+      router.refresh();
     } catch (error) {
       toast.error(getErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
-  }, [token, router, tokenInfo, form]);
+  }, [token, router, tokenInfo, form, session]);
 
   if (!token) {
     return (
@@ -148,6 +154,12 @@ function SetupPasswordContent() {
           Set up your password to complete your account for <strong>{tokenInfo.email}</strong>.
         </p>
       </div>
+
+      {session?.user?.email && session.user.email.toLowerCase() !== tokenInfo.email.toLowerCase() && (
+        <p role="note" className="mb-4 rounded-md border border-warning bg-warning-soft p-3 text-sm text-foreground">
+          You are signed in as <strong>{session.user.email}</strong>. Completing setup will sign you out so you can sign in as {tokenInfo.email}. Use a private window to stay signed in.
+        </p>
+      )}
 
       <div>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-4">
