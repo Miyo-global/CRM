@@ -187,6 +187,7 @@ export function AdminExpenseItem({
   const CatIcon = catConfig.icon;
   const isRejecting = rejectingId === expense.id;
   const adminCatLabel = ADMIN_CATEGORY_LABELS[expense.category || ""] || catConfig.label;
+  const [confirmingPaid, setConfirmingPaid] = useState(false);
 
   return (
     <div className="flex flex-col items-start gap-4 px-4 py-4 transition-colors hover:bg-muted/40 sm:flex-row">
@@ -395,13 +396,25 @@ export function AdminExpenseItem({
               variant="outline"
               size="sm"
               className="h-8 text-xs"
-              onClick={() => onMarkPaid(expense.id)}
+              onClick={() => setConfirmingPaid(true)}
               disabled={isPending}
             >
               Mark reimbursed
             </Button>
           </div>
         ) : null}
+        <ConfirmActionDialog
+          open={confirmingPaid}
+          onOpenChange={setConfirmingPaid}
+          title="Mark as reimbursed?"
+          description={`Record ${formatINR(expense.amount)} as paid to ${formatExpenseSubmitterLabel(expense.user, currentUserId, expense.userId)}. This can't be undone.`}
+          confirmLabel="Mark reimbursed"
+          isPending={isPending}
+          onConfirm={() => {
+            setConfirmingPaid(false);
+            onMarkPaid(expense.id);
+          }}
+        />
       </div>
     </div>
   );
