@@ -12,7 +12,7 @@ import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Check, ChevronRight, ChevronLeft, CircleCheck } from "lucide-react";
-import { useHrDepartments, useOnboardEmployee, useCheckEmailExists, useHrEmployees, isPaginatedEmployees } from "@/lib/api/hooks/hr";
+import { useHrDepartments, useOnboardEmployee, useCheckEmailExists, useCheckEmployeeId, useHrEmployees, isPaginatedEmployees } from "@/lib/api/hooks/hr";
 import { useRolesList } from "@/lib/api/hooks/roles";
 import { StepPersonalInfo } from "./_onboarding/step-personal-info";
 import { StepEmployment } from "./_onboarding/step-employment";
@@ -89,6 +89,9 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
   const { data: orgRoles } = useRolesList();
   const onboardEmployee = useOnboardEmployee();
   const checkEmailExists = useCheckEmailExists();
+  const checkEmployeeId = useCheckEmployeeId();
+  // Preview of the ID a blank Employee ID will get; the server assigns on submit.
+  const [nextEmployeeId, setNextEmployeeId] = useState<string | null>(null);
 
   // Candidate managers for the Reporting Manager field (QA-0021).
   const { data: employeesData } = useHrEmployees();
@@ -228,6 +231,25 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
         return;
       }
     }
+    if (currentStep === 2) {
+      const employeeId = form.getValues("employeeId")?.trim();
+      const joiningDate = form.getValues("joiningDate");
+      try {
+        const res = await checkEmployeeId.mutateAsync({
+          employeeId: employeeId || undefined,
+          joiningDate: joiningDate ? format(joiningDate, "yyyy-MM-dd") : undefined,
+        });
+        if (res.exists) {
+          form.setError("employeeId", { message: "This employee ID is already in use" });
+          form.setFocus("employeeId");
+          return;
+        }
+        setNextEmployeeId(res.next);
+      } catch {
+        // Offline or slow: carry on; the server re-checks on submit.
+        setNextEmployeeId(null);
+      }
+    }
     if (currentStep === 4) {
       const fullValid = await form.trigger();
       if (!fullValid) {
@@ -236,7 +258,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
       }
     }
     setCurrentStep((prev) => Math.min(STEPS.length, prev + 1));
-  }, [currentStep, form, checkEmailExists, goToFirstError]);
+  }, [currentStep, form, checkEmailExists, checkEmployeeId, goToFirstError]);
 
   const handleNext = useCallback(async () => {
     if (advancingRef.current) return;
@@ -423,6 +445,7 @@ export function OnboardingWizard({ prefill }: { prefill?: OnboardingPrefill } = 
                 managerOptions={managerOptions}
                 confirmed={reviewConfirmed}
                 onConfirmedChange={setReviewConfirmed}
+                nextEmployeeId={nextEmployeeId}
               />
             )}
           </div>

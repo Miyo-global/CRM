@@ -169,6 +169,18 @@ export function useOnboardEmployee() {
 
 /** Email uniqueness check for the onboarding wizard. Short timeout: the
  *  wizard must not sit on "Checking…" (A17). */
+/** Hire wizard: is this Employee ID taken / which ID a blank one would get. */
+export function useCheckEmployeeId() {
+  return useMutation({
+    mutationFn: (params: { employeeId?: string; joiningDate?: string }) =>
+      apiClient.get<{ exists: boolean; next: string | null }>(
+        "/hr/employees/check-employee-id",
+        params,
+        { timeout: 5_000 },
+      ),
+  });
+}
+
 export function useCheckEmailExists() {
   return useMutation({
     mutationFn: (email: string) =>

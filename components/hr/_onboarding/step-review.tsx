@@ -32,6 +32,8 @@ interface StepReviewProps {
   managerOptions: { id: string; name: string }[];
   confirmed: boolean;
   onConfirmedChange: (value: boolean) => void;
+  /** Server preview for a blank Employee ID (not reserved). */
+  nextEmployeeId?: string | null;
 }
 
 const GENDER_LABELS: Record<NonNullable<FormValues["gender"]>, string> = {
@@ -108,6 +110,7 @@ export function StepReview({
   managerOptions,
   confirmed,
   onConfirmedChange,
+  nextEmployeeId,
 }: StepReviewProps) {
   const values = form.watch();
   // Form state holds the raw text; parse it the same way the server will.
@@ -157,7 +160,10 @@ export function StepReview({
         <ReviewField label="Reporting Manager" value={managerName} />
         <ReviewField
           label="Employee ID"
-          value={values.employeeId?.trim() || "Auto-generated"}
+          value={
+            values.employeeId?.trim() ||
+            (nextEmployeeId ? `${nextEmployeeId} (auto-generated, confirmed on submit)` : "Auto-generated")
+          }
         />
         <ReviewField label="Joining date" value={formatDate(values.joiningDate)} />
       </ReviewSection>
