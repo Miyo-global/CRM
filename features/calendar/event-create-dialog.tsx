@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo, useId, useRef } from "react";
-import { format, parseISO, addHours, endOfDay, startOfDay } from "date-fns";
+import { format, parseISO, addDays, addHours, endOfDay, startOfDay } from "date-fns";
 import { apiClient } from "@/lib/api-client";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
@@ -120,12 +120,17 @@ interface FormState {
 
 function toDefaultForm(slot?: { start: Date; end: Date } | null): FormState {
   const start = slot?.start ?? new Date();
-  const end = slot?.end ?? addHours(start, 1);
+  let end = slot?.end ?? addHours(start, 1);
+  // A month-cell pick is midnight to the next midnight (exclusive end): that
+  // is an all-day event ending the same day, not a 24h timed one.
+  const wholeDays =
+    end > start && start.getTime() === startOfDay(start).getTime() && end.getTime() === startOfDay(end).getTime();
+  if (wholeDays) end = addDays(end, -1);
   return {
     title: "",
     description: "",
     location: "",
-    allDay: false,
+    allDay: wholeDays,
     color: "blue",
     category: "general",
     startDate: format(start, "yyyy-MM-dd"),
@@ -478,7 +483,7 @@ export function EventCreateDialog({ open, onOpenChange, defaultSlot, event }: Ev
                 </p>
               ) : (
                 <p id="ev-title-hint" className="text-2xs text-muted-foreground">
-                  Use letters in the title; numbers-only titles are not allowed.
+                  {CALENDAR_TITLE_MIN}–{CALENDAR_TITLE_MAX} characters, including letters; numbers-only titles are not allowed.
                 </p>
               )}
               <p className="text-2xs text-muted-foreground text-right">

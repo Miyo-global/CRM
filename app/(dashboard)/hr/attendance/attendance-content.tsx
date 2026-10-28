@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TimerCard } from "@/features/hr/attendance/check-in-button";
 import { AttendanceCalendar } from "@/features/hr/attendance/attendance-calendar";
@@ -28,6 +29,20 @@ function MyAttendancePanels({ userId, isAdmin }: { userId: string; isAdmin: bool
 }
 
 export function AttendanceContent({ userId, isAdmin = false }: { userId: string; isAdmin?: boolean }) {
+  // The tab lives in ?tab= so History / Team monitor can be linked and survive a refresh.
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const requested = searchParams.get("tab");
+  const activeTab = requested === "history" || (requested === "team" && isAdmin) ? requested : "my";
+  const handleTabChange = useCallback((tab: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === "my") params.delete("tab");
+    else params.set("tab", tab);
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [searchParams, router, pathname]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const hash = window.location.hash.replace(/^#/, "");
@@ -39,7 +54,7 @@ export function AttendanceContent({ userId, isAdmin = false }: { userId: string;
   }, []);
 
   return (
-    <Tabs defaultValue="my" className="flex-1 min-h-0 flex flex-col">
+    <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 min-h-0 flex flex-col">
       <TabsList variant="underline" className="shrink-0">
         <TabsTrigger value="my">My attendance</TabsTrigger>
         <TabsTrigger value="history">History</TabsTrigger>

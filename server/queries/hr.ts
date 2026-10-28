@@ -383,6 +383,10 @@ export async function getAttendanceLogs(
 }
 
 export async function getAttendanceMonitor(orgId: string, date: string) {
+  const holiday = await db.query.holidays.findFirst({
+    where: and(eq(holidays.orgId, orgId), eq(holidays.date, date)),
+    columns: { id: true },
+  });
   const rows = await db
     .select({
       userId: users.id,
@@ -425,7 +429,7 @@ export async function getAttendanceMonitor(orgId: string, date: string) {
     const displayName =
       r.firstName && r.lastName ? `${r.firstName} ${r.lastName}` : (r.name ?? r.email);
 
-    let status: "PRESENT" | "ON_BREAK" | "CHECKED_OUT" | "ON_LEAVE" | "ABSENT" = "ABSENT";
+    let status: "PRESENT" | "ON_BREAK" | "CHECKED_OUT" | "ON_LEAVE" | "HOLIDAY" | "ABSENT" = "ABSENT";
     if (r.leaveApproved === "APPROVED") {
       status = "ON_LEAVE";
     } else if (r.attendanceStatus === "ON_BREAK") {
@@ -434,6 +438,9 @@ export async function getAttendanceMonitor(orgId: string, date: string) {
       status = "CHECKED_OUT";
     } else if (r.checkIn) {
       status = "PRESENT";
+    } else if (holiday) {
+      // Not clocking in on an org holiday is not an absence.
+      status = "HOLIDAY";
     }
 
     return {

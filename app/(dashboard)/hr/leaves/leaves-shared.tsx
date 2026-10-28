@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { format, differenceInCalendarDays, parseISO } from "date-fns";
-import { parseCalendarDate } from "@/lib/date-utils";
+import { parseCalendarDate, formatCalendarRange } from "@/lib/date-utils";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -337,10 +337,8 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
   const createdAt = request.createdAt ? new Date(request.createdAt) : start;
 
   const periodStr = request.isHalfDay
-    ? `${format(start, "MMM d")} (${request.halfDayPeriod === "AM" ? "Morning" : "Afternoon"})`
-    : days === 1
-    ? format(start, "MMM d")
-    : `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
+    ? `${formatCalendarRange(start)} (${request.halfDayPeriod === "AM" ? "Morning" : "Afternoon"})`
+    : formatCalendarRange(start, end);
 
 
   const priority = request.priority || "MEDIUM";
@@ -349,7 +347,11 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
   const employeeName = formatEmployeeName(request);
 
   return (
-    <tr className="group border-b border-border transition-colors last:border-0 hover:bg-muted/40">
+    // Row click opens the details sheet; the kebab stays as the keyboard path.
+    <tr
+      className={`group border-b border-border transition-colors last:border-0 hover:bg-muted/40 ${onViewDetails ? "cursor-pointer" : ""}`}
+      onClick={onViewDetails}
+    >
       {showEmployee && (
         <td className="py-3.5 px-3">
           <div className="flex items-center gap-2.5 min-w-[140px]">
@@ -411,7 +413,8 @@ export const RequestHistoryRow = React.memo(function RequestHistoryRow({
           )}
         </div>
       </td>
-      <td className="py-3.5 px-3 text-right">
+      {/* Menu clicks bubble through the portal; keep them off the row. */}
+      <td className="py-3.5 px-3 text-right" onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon-sm" aria-label="Actions">
@@ -513,10 +516,8 @@ export function LeaveRequestDetailsSheet({
   const days = request.isHalfDay ? 0.5 : differenceInCalendarDays(end, start) + 1;
   const createdAt = request.createdAt ? new Date(request.createdAt) : start;
   const periodStr = request.isHalfDay
-    ? `${format(start, "MMM d")} (${request.halfDayPeriod === "AM" ? "Morning" : "Afternoon"})`
-    : days === 1
-    ? format(start, "MMM d")
-    : `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
+    ? `${formatCalendarRange(start)} (${request.halfDayPeriod === "AM" ? "Morning" : "Afternoon"})`
+    : formatCalendarRange(start, end);
   const priority = request.priority || "MEDIUM";
   const pConfig = priorityConfig[priority] ?? priorityConfig.MEDIUM;
   const employeeName = formatEmployeeName(request);

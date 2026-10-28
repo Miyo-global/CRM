@@ -19,7 +19,10 @@ import {
   startOfYear,
   endOfYear,
   startOfDay,
+  endOfDay,
+  addHours,
 } from "date-fns";
+import { isDateOnly, parseCalendarDate } from "@/lib/date-utils";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -165,8 +168,10 @@ export function CalendarView() {
       events.map((e) => ({
         id: e.id,
         title: e.title,
-        start: new Date(e.start),
-        end: new Date(e.end),
+        // Leaves/holidays arrive as bare days; read them as local days and end
+        // them at end of day (react-big-calendar treats midnight as exclusive).
+        start: parseCalendarDate(e.start),
+        end: isDateOnly(e.end) ? endOfDay(parseCalendarDate(e.end)) : new Date(e.end),
         allDay: e.allDay ?? false,
         resource: {
           color: e.color,
@@ -186,9 +191,17 @@ export function CalendarView() {
   }, []);
 
   const handleOpenCreate = useCallback(() => {
-    setCreateSlot(null);
+    // In Day view the toolbar button adds to the day on screen, at the current time.
+    if (view === "day") {
+      const now = new Date();
+      const start = new Date(currentDate);
+      start.setHours(now.getHours(), now.getMinutes(), 0, 0);
+      setCreateSlot({ start, end: addHours(start, 1) });
+    } else {
+      setCreateSlot(null);
+    }
     setIsCreateOpen(true);
-  }, []);
+  }, [view, currentDate]);
 
   const handleSelectEvent = useCallback((event: BigCalEvent) => {
     setSelectedEventId(String(event.id));

@@ -18,8 +18,10 @@ function toIstDateString(d: Date): string {
 export interface CalendarEventItem {
   id: string;
   title: string;
-  start: Date;
-  end: Date;
+  /** Leaves and holidays are bare calendar days ("YYYY-MM-DD"), never instants:
+   *  UTC midnight renders a day early west of UTC. */
+  start: Date | string;
+  end: Date | string;
   allDay?: boolean;
   color?: string | null;
   category: string;
@@ -173,8 +175,8 @@ export async function getCalendarEvents(
     result.push({
       id: `leave-${lv.id}`,
       title: `${lv.userName ?? "Employee"} — ${detailed ? (lv.leaveTypeName ?? REDACTED_LEAVE_LABEL) : REDACTED_LEAVE_LABEL}`,
-      start: new Date(lv.startDate),
-      end: new Date(lv.endDate),
+      start: lv.startDate,
+      end: lv.endDate,
       allDay: true,
       color: "green",
       category: "leave",
@@ -215,12 +217,11 @@ export async function getCalendarEvents(
   }
 
   for (const hd of holidaysData) {
-    const hdDate = new Date(hd.date);
     result.push({
       id: `holiday-${hd.id}`,
       title: hd.name,
-      start: hdDate,
-      end: hdDate,
+      start: hd.date,
+      end: hd.date,
       allDay: true,
       color: "purple",
       category: "holiday",
@@ -229,7 +230,7 @@ export async function getCalendarEvents(
     });
   }
 
-  result.sort((a, b) => a.start.getTime() - b.start.getTime());
+  result.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
   return result;
 }
 

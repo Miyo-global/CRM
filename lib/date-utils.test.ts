@@ -4,6 +4,7 @@ import {
   addDaysToDateString,
   daysBetweenDateStrings,
   formatCalendarDate,
+  formatCalendarRange,
   formatDisplayDate,
   formatIST,
   getTodayString,
@@ -14,6 +15,15 @@ import {
   subtractYearsFromDateString,
   zonedDayStartUtc,
 } from "./date-utils";
+
+describe("formatCalendarRange (P3-leave-approvals-date-format-inconsistent)", () => {
+  it("formats one day, a same-year span and a cross-year span alike", () => {
+    expect(formatCalendarRange("2026-11-03", "2026-11-03", "en-GB")).toBe("3 Nov 2026");
+    expect(formatCalendarRange("2026-10-28", null, "en-GB")).toBe("28 Oct 2026");
+    expect(formatCalendarRange("2026-10-28", "2026-10-29", "en-GB")).toBe("28 Oct – 29 Oct 2026");
+    expect(formatCalendarRange("2026-12-30", "2027-01-02", "en-GB")).toBe("30 Dec 2026 – 2 Jan 2027");
+  });
+});
 
 describe("monthKeyToDate (R2-PAY-01)", () => {
   // West of UTC `new Date("2026-10-01")` is still 30 September locally, which
