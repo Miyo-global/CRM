@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, memo } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isWeekend, isToday } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isWeekend } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -194,7 +194,8 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
                 {calendarDays.map((day) => {
                   const config = statusConfig[day.status];
                   const dayNum = day.date.getDate();
-                  const isTodayDate = isToday(day.date);
+                  // Org-tz today, not the browser's (the ring sat on yesterday west of UTC).
+                  const isTodayDate = format(day.date, "yyyy-MM-dd") === getTodayString();
                   const isFutureOrNone =
                     day.status === "future" ||
                     day.status === "none" ||
@@ -213,7 +214,8 @@ export const AttendanceCalendar = memo(function AttendanceCalendar({
                       title={title}
                       aria-current={isTodayDate ? "date" : undefined}
                     >
-                      {day.status === "notEmployed" ? "" : dayNum}
+                      {/* Pre-joining days stay numbered (greyed) so the month reads whole. */}
+                      {dayNum}
                       {day.status === "absent" && (
                         <span
                           className={`absolute bottom-1 size-1.5 rounded-full ${statusConfig.absent.dot}`}
