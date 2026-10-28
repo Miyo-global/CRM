@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 
 import { toast } from "sonner";
 import { isExpenseAdmin } from "@/lib/auth/role-guards";
+import { canArchiveTicket } from "@/lib/projects/project-roles";
 import {
   useTicket,
   useUpdateTicket,
@@ -191,7 +192,11 @@ export function TicketDetailBody({ projectId, ticketId, statuses, variant, onArc
         isLoading={isLoading}
         saving={saving}
         isDeleting={archiveTicket.isPending}
-        onDelete={canEdit && ticket ? () => archiveTicket.mutate({ ticketId }) : undefined}
+        onDelete={
+          ticket && session?.user?.id && canArchiveTicket(projectData?.viewerRole, ticket.reporterId, session.user.id)
+            ? () => archiveTicket.mutate({ ticketId })
+            : undefined
+        }
         onDeletePermanently={
           projectData?.viewerRole === "OWNER" && ticket
             ? () => archiveTicket.mutate({ ticketId, permanent: true })

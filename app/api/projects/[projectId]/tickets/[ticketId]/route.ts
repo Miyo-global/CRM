@@ -15,6 +15,7 @@ import {
 import { eq, and, desc, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { parseIdParam, requireProjectAccess } from "@/lib/projects/require-project-access";
+import { canArchiveTicket } from "@/lib/projects/project-roles";
 import { diffTicketActivity, recordTicketActivity } from "@/lib/projects/record-ticket-activity";
 import { allOrgMembers } from "@/lib/projects/assignable-users";
 import { notifyTicketUpdate } from "@/lib/projects/ticket-update-notifications";
@@ -236,8 +237,11 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     }
 
     const scope = and(eq(tickets.id, id), eq(tickets.projectId, guard.projectId), eq(tickets.orgId, session.orgId), isNull(tickets.deletedAt));
-    const ticket = await db.query.tickets.findFirst({ where: scope, columns: { id: true } });
+    const ticket = await db.query.tickets.findFirst({ where: scope, columns: { id: true, reporterId: true } });
     if (!ticket) return err("Ticket not found", 404);
+    if (!canArchiveTicket(guard.role, ticket.reporterId, session.user.id)) {
+      return err("Only the project owner, a manager or the reporter can archive this ticket", 403);
+    }
 
     if (!force) {
       const blockedBy = await db.query.workItemRelations.findMany({
