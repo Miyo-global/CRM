@@ -6,7 +6,7 @@ export default defineConfig({
     environment: "node",
     include: ["**/*.{test,spec}.{ts,tsx}"],
     // e2e/ is Playwright (MIYO-0686), run with `pnpm test:e2e`.
-    exclude: ["**/node_modules/**", "**/.next/**", "**/dist/**", "e2e/**"],
+    exclude: ["**/node_modules/**", "**/.next/**", "**/dist/**", "e2e/**", ".claude/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
